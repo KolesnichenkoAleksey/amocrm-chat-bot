@@ -5,8 +5,8 @@ const LinkedDealsModel = new Schema<ILinkedDeals>({
     widgetUserId: {type: Number, require: true},
     linkedGroups: {
         type: Array({
-                telegramGroupId: {type: Number, require: true},
-                dealsIds: {type: [Number], require: true}
+            telegramGroupId: {type: Number, require: true},
+            dealsIds: {type: [Number], require: true}
         }),
         require: true
     },
