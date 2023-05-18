@@ -1,0 +1,9 @@
+*.log*
+node_modules
+amo_token.json
+.idea
+*.zip
+*.html
+build/
+widget/
+authclients/
