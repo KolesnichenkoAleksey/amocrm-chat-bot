@@ -9,7 +9,12 @@ const User = new Schema<IUser>({
     installed: {type: Boolean, require: true},
     testPeriod: {type: Boolean, require: true},
     startUsingDate: {type: String, require: true},
-    finishUsingDate: {type: String, require: true}
+    finishUsingDate: {type: String, require: true},
+    initializingBots: {type: Array({
+            botToken: {type: String, require: true},
+            botName: {type: String, require: true}
+        }), require: true}
 });
 
 export default model('User', User);
+

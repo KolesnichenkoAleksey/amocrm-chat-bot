@@ -1,3 +1,8 @@
+type initializingBots = {
+    botToken: string;
+    botName: string;
+}
+
 export interface IUser {
     widgetUserSubdomain: string;
     accountId: number;
@@ -7,4 +12,5 @@ export interface IUser {
     testPeriod: boolean;
     startUsingDate: string;
     finishUsingDate: string;
+    initializingBots: Array<initializingBots>
 }
