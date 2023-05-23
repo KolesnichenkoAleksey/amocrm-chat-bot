@@ -32,6 +32,7 @@ define([], function () {
         const createTwigCheckbox = (settings) => {
             return self.render({ ref: '/tmpl/controls/checkbox.twig' }, settings);
         }
+
         const subscribeTimeFunc = async (subdomain) => {
             const res = await fetchIt(`https://widev6.reon.pro/widgets/mcontroller/status?subdomain=${subdomain}`)
             if (res.response === 'trial') {
@@ -151,6 +152,12 @@ define([], function () {
             </div>
             `)
         }
+
+        //==================================================================================================
+        //==================================================================================================
+        //============= GET USAGE PERIOD INFO ==============================================================
+        //==================================================================================================
+        //==================================================================================================
         this.insertSubscribeTimeInfo = async (place, SUBDOMAIN) => {
             const subscribeTimeText = await subscribeTimeFunc(SUBDOMAIN);
             const subscribeTime = subscribeTimeTemplate(subscribeTimeText);

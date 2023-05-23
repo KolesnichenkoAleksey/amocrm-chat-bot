@@ -52,7 +52,7 @@
     padding: 12px 0;
     cursor: pointer;
     position: relative;
-    background: #fff;
+    background: inherit;
     color: #92989B;
     transition: all 0.1s ease-in-out;
     border-bottom: 3px solid rgba(0, 0, 0, 0);

@@ -1,17 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
-import App from './App';
 import { store } from './app/store';
-import '../widget/modules/settingsREON/style-settings.css'
+import WidgetAdvancedSettings from './components/widget-advanced-setings';
+import '../widget/modules/settingsREON/style-settings.css';
 
 const Wid = {
 
-    render() {
+    render() {        
         return true;
     },
 
-    init() {
+    init() {        
         return true;
     },
 
@@ -23,21 +23,23 @@ const Wid = {
         return true;
     },
 
-    advancedSettings() {
-        const rootPapa:HTMLElement | null = document.getElementById('list_page_holder') ? document.getElementById('list_page_holder') : null;
-        if (rootPapa) {
+    advancedSettings(SUBDOMAIN: string) {
+        const rootAdvancedWidgetSettings:HTMLElement | null = document.getElementById('list_page_holder');
 
-        const root = ReactDOM.createRoot(rootPapa);
-        root.render(
-            <Provider store={store}>
-                <App />
-            </Provider>
-        );
+        if (rootAdvancedWidgetSettings) {
+            const rootAdvancedSettings = ReactDOM.createRoot(rootAdvancedWidgetSettings);
+            rootAdvancedSettings.render(
+                <Provider store={store}>
+                    <WidgetAdvancedSettings
+                        SUBDOMAIN={SUBDOMAIN}
+                    />
+                </Provider>
+            );
         }
         return true;
     },
 
-    onSave() {
+    onSave() {        
         return true;
     },
 
@@ -54,8 +56,7 @@ const Wid = {
 
     tasks_selected() {
 
-    }
-
+    },
 };
 
 export default Wid;

@@ -1,8 +1,33 @@
+:root {
+  --button-color: #BF9669;
+  --button-color-hover: #1A823D;
+  --taskboard-border-color: #79450C;
+  --input-color: rgb(76, 139, 247);
+  --font-color: rgb(79, 41, 0);
+  --modal-color: #D6AF86;
+  
+  --table-th-color: #92989b;
+  --checkbox-color: #f1f1f1;
+  --bg-color: #f5f5f5;
+  --table-border-color: #dbdddf;
+  --bot-card-bg-color: #f1f1f1;
+  --main-text-color: #292929;
+  --table-border-bottom-color: #dbdddf;
+}
+
+:root.theme-dark {
+  --checkbox-color: #0f2231;
+  --bg-color: #153043;
+  --table-border-color: #3c5d76;
+  --bot-card-bg-color: #183950;
+  --main-text-color: #ced5d8;
+  --table-border-bottom-color: transparent;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  /* outline: 1px solid black */
 }
 
 body {
@@ -12,7 +37,12 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color: var(--main-text-color);
   display: flex;
+}
+
+body._scroll-lock {
+  overflow: hidden;
 }
 
 code {
@@ -37,6 +67,11 @@ code {
 
 .title {
   height: 65px;
+}
+
+a {
+  color: inherit;
+  text-decoration: underline;
 }
 
 #root {
