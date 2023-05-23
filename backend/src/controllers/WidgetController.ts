@@ -4,7 +4,7 @@ import {ApiError} from '../error/ApiError';
 import {getUserLogger, mainLogger} from "../components/logger/logger";
 import Api from '../API/amoAPI';
 import mongoManager from '../components/mongo/MongoManager';
-import {IUser} from '../@types/models/IUser';
+import {UserInterface} from '../@types/models/UserInterface';
 import dayjs from 'dayjs';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -34,7 +34,7 @@ class WidgetController {
                     userLogger.debug(`Произошла ошибка авторизации ${subDomain}`, err);
                 });
 
-            const existAppUser: IUser | null = await mongoManager.getWidgetUserBySubdomain(subDomain);
+            const existAppUser: UserInterface | null = await mongoManager.getWidgetUserBySubdomain(subDomain);
 
             if (!existAppUser) {
 
@@ -47,7 +47,7 @@ class WidgetController {
 
                 const todayDate = dayjs()
 
-                const newAppUser: IUser = {
+                const newAppUser: UserInterface = {
                     widgetUserSubdomain: subDomain,
                     accountId: appUserAccountData.id,
                     authCode,
@@ -63,7 +63,7 @@ class WidgetController {
 
             } else {
 
-                const updatedAppUser: IUser = {
+                const updatedAppUser: UserInterface = {
                     ...existAppUser,
                     authCode,
                     installed: true
@@ -101,7 +101,7 @@ class WidgetController {
                 return next(ApiError.badRequest('Не был передан account_id!'));
             }
 
-            const existAppUser: IUser | null = await mongoManager.getWidgetUserByAccountId(accountId);
+            const existAppUser: UserInterface | null = await mongoManager.getWidgetUserByAccountId(accountId);
 
             if (!existAppUser) {
                 mainLogger.debug('Пользователя с таким account_id не существует!');
@@ -114,7 +114,7 @@ class WidgetController {
 
             fs.unlinkSync(AMO_TOKEN_PATH);
 
-            const updatedAppUser: IUser = {
+            const updatedAppUser: UserInterface = {
                 ...existAppUser,
                 installed: false
             };
@@ -152,7 +152,7 @@ class WidgetController {
 
             const userLogger = getUserLogger(subdomain);
 
-            const existWidgetUser: IUser | null = await mongoManager.getWidgetUserBySubdomain(subdomain);
+            const existWidgetUser: UserInterface | null = await mongoManager.getWidgetUserBySubdomain(subdomain);
 
             if (!existWidgetUser) {
                 return next(ApiError.notFound('Пользователя с таким SubDomain не существует!'));

@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
-import { DataBaseConnectionOptions } from '../../@types/mongo/MongoConfig';
+import {DataBaseConnectionOptions} from '../../@types/mongo/MongoConfig';
 import User from '../../models/userModel';
-import { IUser } from '../../@types/models/IUser';
-import { getUserLogger, mainLogger } from '../logger/logger';
-import { errorHandlingByType } from '../../error/errorHandlingByType';
+import {getUserLogger, mainLogger} from '../logger/logger';
+import {errorHandlingByType} from '../../error/errorHandlingByType';
+import {UserInterface} from "../../@types/models/UserInterface";
 
 class ManagerMongoDB {
     async connect(UriConnection: string, ConnectionOptions: DataBaseConnectionOptions) {
@@ -11,13 +11,13 @@ class ManagerMongoDB {
         await mongoose.connect(UriConnection, ConnectionOptions);
     };
 
-    async getWidgetUserByAccountId(accountId: number): Promise<IUser | null> {
+    async getWidgetUserByAccountId(accountId: number): Promise<UserInterface | null> {
         if (!accountId) {
             return null;
         }
 
         try {
-            const widgetUser = await User.findOne({ accountId }).exec();
+            const widgetUser = await User.findOne({accountId}).exec();
             return widgetUser || null;
         } catch (error: unknown) {
             mainLogger.debug(`Пользователь с Id ${accountId} не был найден!`);
@@ -27,7 +27,7 @@ class ManagerMongoDB {
         return null;
     }
 
-    async getWidgetUserBySubdomain(subdomain: string): Promise<IUser | null> {
+    async getWidgetUserBySubdomain(subdomain: string): Promise<UserInterface | null> {
         if (!subdomain) {
             return null;
         }
@@ -35,7 +35,7 @@ class ManagerMongoDB {
         const logger = getUserLogger(subdomain);
 
         try {
-            const widgetUser = await User.findOne({ subdomain }).exec();
+            const widgetUser = await User.findOne({subdomain}).exec();
             return widgetUser || null;
         } catch (error: unknown) {
             logger.debug(`Пользователь с сабдоменом ${subdomain} не был найден!`);
@@ -45,7 +45,7 @@ class ManagerMongoDB {
         return null;
     }
 
-    async insertUser(userContent: IUser): Promise<void> {
+    async insertUser(userContent: UserInterface): Promise<void> {
 
         const logger = getUserLogger(userContent.widgetUserSubdomain);
 
@@ -65,14 +65,14 @@ class ManagerMongoDB {
         }
     }
 
-    async updateUser(userContent: IUser): Promise<void> {
+    async updateUser(userContent: UserInterface): Promise<void> {
 
         const logger = getUserLogger(userContent.widgetUserSubdomain);
 
         try {
 
             await User.updateOne(
-                { accountId: userContent.accountId },
+                {accountId: userContent.accountId},
                 {
                     $set: {
                         ...userContent

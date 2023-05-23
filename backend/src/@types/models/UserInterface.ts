@@ -1,9 +1,9 @@
-type initializingBots = {
+type InitializingBots = {
     botToken: string;
     botName: string;
 }
 
-export interface IUser {
+export interface UserInterface {
     widgetUserSubdomain: string;
     accountId: number;
     authCode: string;
@@ -12,5 +12,5 @@ export interface IUser {
     testPeriod: boolean;
     startUsingDate: string;
     finishUsingDate: string;
-    initializingBots: Array<initializingBots>
+    initializingBots: InitializingBots[]
 }

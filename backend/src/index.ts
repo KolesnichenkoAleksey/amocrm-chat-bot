@@ -29,6 +29,7 @@ app.use(router);
 
 app.use(errorHandler);
 
+// Моковые данные, которые будут в дальнейшем браться из базы, для наглядности они находятся тут
 const mockBotTokens: string[] = [
     '5969836269:AAEUT45drow1aAD0dM6iw8LcXlcwg1V1a-E',
     '5313087216:AAF9X15tR5mzoyu4yN6kb3IHC6BC8fOknN8'
@@ -39,7 +40,7 @@ const start = async (): Promise<void> => {
         await mongoManager.connect(MONGO_URI, MongooseSettings);
         app.listen(PORT);
     } catch (error: unknown) {
-        errorHandlingByType(error)
+        errorHandlingByType(error);
     }
 };
 

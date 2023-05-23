@@ -1,7 +1,7 @@
 import {model, Schema} from 'mongoose';
-import {ILinkedDeals} from "../@types/models/ILinkedDeals";
+import {LinkedDealsInterface} from "../@types/models/LinkedDealsInterface";
 
-const LinkedDealsModel = new Schema<ILinkedDeals>({
+const LinkedDealsModel = new Schema<LinkedDealsInterface>({
     widgetUserId: {type: Number, require: true},
     linkedGroups: {
         type: Array({

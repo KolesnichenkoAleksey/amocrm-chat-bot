@@ -1,10 +1,10 @@
-type linkedContact = {
+type LinkedContact = {
     amoCRMContactId: number,
     telegramUserId: number,
     telegramName: string
 }
 
-export interface ILinkedContacts {
+export interface LinkedContactsInterface {
     widgetUserId: number,
-    linkedContact: Array<linkedContact>
+    linkedContact: LinkedContact[]
 }

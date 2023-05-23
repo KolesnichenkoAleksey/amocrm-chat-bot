@@ -10,26 +10,25 @@ export class Bot {
         this.botInstance = new Telegraf<Context>(botToken);
     }
 
-    getBotToken = () => {
+    getBotToken = (): string => {
         return this.botInstance.telegram.token
     }
 
-    launchInstance = async () => {
+    launchInstance = async (): Promise<void> => {
         try {
             await this.botInstance.launch();
         } catch (error: unknown) {
             if (error instanceof Error) {
                 mainLogger.debug(error.message);
             }
-
             if (typeof error === 'string') {
                 mainLogger.debug(error);
             }
         }
     };
 
-    startListeners = () => {
-        new BotListeners(this.botInstance);
+    startListeners = (): Bot => {
+        const botListeners = new BotListeners(this.botInstance);
         return this;
     };
 

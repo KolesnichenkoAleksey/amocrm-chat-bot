@@ -1,7 +1,7 @@
 import {model, Schema} from 'mongoose';
-import {ILinkedContacts} from "../@types/models/ILinkedContacts";
+import {LinkedContactsInterface} from "../@types/models/LinkedContactsInterface";
 
-const LinkedContactsModel = new Schema<ILinkedContacts>({
+const LinkedContactsModel = new Schema<LinkedContactsInterface>({
     widgetUserId: {type: Number, require: true},
     linkedContact: {
         type: Array({
