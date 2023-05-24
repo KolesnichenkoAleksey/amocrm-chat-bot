@@ -1,21 +1,26 @@
-import {Request, Response, NextFunction} from 'express';
-import {StatusCodes} from '../consts/statusCodes';
-import {ApiError} from '../error/ApiError';
-import {getUserLogger, mainLogger} from "../components/logger/logger";
+import { Response, NextFunction } from 'express';
+import { StatusCodes } from '../consts/statusCodes';
+import { ApiError } from '../error/ApiError';
+import { getUserLogger, mainLogger } from '../components/logger/logger';
 import Api from '../API/amoAPI';
 import mongoManager from '../components/mongo/MongoManager';
-import {UserInterface} from '../@types/models/UserInterface';
+import { UserInterface } from '../@types/models/UserInterface';
 import dayjs from 'dayjs';
 import path from 'node:path';
 import fs from 'node:fs';
-import {customRequest} from '../API/basicMethodsAPI';
+import { customRequest } from '../API/basicMethodsAPI';
+import {
+    TypedRequestDeleteWidget,
+    TypedRequestInstallWidget,
+    TypedRequestStatus
+} from '../@types/express-custom/RequestWidget';
 
 
 class WidgetController {
-    async installWidget(req: Request, res: Response, next: NextFunction) {
+    async installWidget(req: TypedRequestInstallWidget, res: Response, next: NextFunction) {
         try {
-            const authCode = String(req.query.code);
-            const subDomain = String(req.query.referer).split('.')[0];
+            const authCode = req.query.code || undefined;
+            const subDomain = req.query.referer.split('.')[0] || undefined;
 
             if (!authCode || !subDomain) {
                 mainLogger.debug('Не были переданы authCode или subDomain');
@@ -45,7 +50,7 @@ class WidgetController {
                     return next(ApiError.unauthorized('Неверный логин или пароль!'));
                 }
 
-                const todayDate = dayjs()
+                const todayDate = dayjs();
 
                 const newAppUser: UserInterface = {
                     widgetUserSubdomain: subDomain,
@@ -75,7 +80,7 @@ class WidgetController {
 
             userLogger.debug(`Виджет был успешно установлен!`);
 
-            return res.status(StatusCodes.Ok.Code).json({message: 'Установка виджета прошла успешно!'});
+            return res.status(StatusCodes.Ok.Code).json({ message: 'Установка виджета прошла успешно!' });
 
         } catch (error: unknown) {
 
@@ -92,9 +97,9 @@ class WidgetController {
         }
     }
 
-    async deleteWidget(req: Request, res: Response, next: NextFunction) {
+    async deleteWidget(req: TypedRequestDeleteWidget, res: Response, next: NextFunction) {
         try {
-            const accountId = Number(req.query.account_id);
+            const accountId = Number(req.query.account_id) || undefined;
 
             if (!accountId) {
                 mainLogger.debug('Не был передан account_id!');
@@ -121,11 +126,11 @@ class WidgetController {
 
             await mongoManager.updateUser(updatedAppUser);
 
-            await customRequest(`https://vds2151841.my-ihor.ru/del`, {params: req.query}, 'Был успешно удалён аккаунт!', 'Возникли проблемы с редиректом!');
+            await customRequest(`https://vds2151841.my-ihor.ru/del`, { params: req.query }, 'Был успешно удалён аккаунт!', 'Возникли проблемы с редиректом!');
 
             userLogger.debug(`Виджет был успешно удалён!`);
 
-            res.status(StatusCodes.Ok.Code).json({message: 'Виджет был успешно удалён!'});
+            res.status(StatusCodes.Ok.Code).json({ message: 'Виджет был успешно удалён!' });
 
         } catch (error: unknown) {
 
@@ -142,11 +147,12 @@ class WidgetController {
         }
     }
 
-    async getUserStatus(req: Request, res: Response, next: NextFunction) {
+    async getUserStatus(req: TypedRequestStatus, res: Response, next: NextFunction) {
         try {
-            const subdomain = String(req.query.subdomain);
+            const subdomain = req.query.subdomain || undefined;
 
             if (!subdomain) {
+                mainLogger.debug('Не был передан subdomain!');
                 return next(ApiError.badRequest('Не был передан SubDomain!'));
             }
 
@@ -171,19 +177,19 @@ class WidgetController {
             if (isSubscribe > 0) {
 
                 if (existWidgetUser.testPeriod) {
-                    return res.status(StatusCodes.Ok.Code).json({...payStatus, response: 'trial'});
+                    return res.status(StatusCodes.Ok.Code).json({ ...payStatus, response: 'trial' });
                 }
 
-                await mongoManager.updateUser({...existWidgetUser, paid: true});
+                await mongoManager.updateUser({ ...existWidgetUser, paid: true });
                 userLogger.debug(`Статус оплаты изменён на "Оплачено"`);
 
-                return res.status(StatusCodes.Ok.Code).json({...payStatus, response: 'paid'});
+                return res.status(StatusCodes.Ok.Code).json({ ...payStatus, response: 'paid' });
             }
 
-            await mongoManager.updateUser({...existWidgetUser, testPeriod: false});
+            await mongoManager.updateUser({ ...existWidgetUser, testPeriod: false });
             userLogger.debug(`Отключён тестовый период!`);
 
-            return res.status(StatusCodes.Ok.Code).json({...payStatus, response: 'notPaid'});
+            return res.status(StatusCodes.Ok.Code).json({ ...payStatus, response: 'notPaid' });
 
         } catch (error: unknown) {
 

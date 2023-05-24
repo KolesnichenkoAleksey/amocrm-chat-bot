@@ -10,11 +10,11 @@ export class Bot {
         this.botInstance = new Telegraf<Context>(botToken);
     }
 
-    getBotToken = (): string => {
-        return this.botInstance.telegram.token
-    }
+    getBotToken(): string {
+        return this.botInstance.telegram.token;
+    };
 
-    launchInstance = async (): Promise<void> => {
+    async launchInstance(): Promise<void> {
         try {
             await this.botInstance.launch();
         } catch (error: unknown) {
@@ -27,7 +27,7 @@ export class Bot {
         }
     };
 
-    startListeners = (): Bot => {
+    startListeners(): Bot {
         const botListeners = new BotListeners(this.botInstance);
         return this;
     };

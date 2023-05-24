@@ -1,4 +1,4 @@
-type InitializingBots = {
+export type InitializingBot = {
     botToken: string;
     botName: string;
 }
@@ -12,5 +12,5 @@ export interface UserInterface {
     testPeriod: boolean;
     startUsingDate: string;
     finishUsingDate: string;
-    initializingBots: InitializingBots[]
+    initializingBots: InitializingBot[]
 }
