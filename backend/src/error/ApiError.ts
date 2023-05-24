@@ -9,23 +9,23 @@ class ApiError extends Error {
         this.message = message;
     }
 
-    static badRequest(message: string) {
+    static badRequest(message: string): ApiError {
         return new ApiError(StatusCodes.BadRequest.Code, message);
     }
 
-    static unauthorized(message: string) {
+    static unauthorized(message: string): ApiError {
         return new ApiError(StatusCodes.Unauthorized.Code, message);
     }
 
-    static forbidden(message: string) {
+    static forbidden(message: string): ApiError {
         return new ApiError(StatusCodes.Forbidden.Code, message);
     }
 
-    static notFound(message: string) {
+    static notFound(message: string): ApiError {
         return new ApiError(StatusCodes.NotFound.Code, message);
     }
 
-    static internal(message: string) {
+    static internal(message: string): ApiError {
         return new ApiError(StatusCodes.Internal.Code, message);
     }
 }

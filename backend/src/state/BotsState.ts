@@ -1,17 +1,18 @@
 import { Bot } from '../components/bot/Bot';
 import { mainLogger } from '../components/logger/logger';
+import { errorHandlingByType } from '../error/errorHandlingByType';
 
 class BotsState {
 
     private botTokens: string[];
-    private readonly botInstances: Bot[];
+    private botInstances: Bot[];
 
     constructor() {
         this.botTokens = [];
         this.botInstances = [];
     }
 
-    initializeBots = (botTokens: string[]) => {
+    initializeBots = (botTokens: string[]): BotsState => {
 
         this.botTokens = botTokens;
 
@@ -22,22 +23,18 @@ class BotsState {
         return this;
     };
 
-    launchInitializedBots = () => {
+    launchInitializedBots = (): void => {
         try {
-            for (const botInstance of this.botInstances) {
+            this.botInstances.forEach((botInstance: Bot) => {
                 botInstance
                     .startListeners()
                     .launchInstance()
                     .then();
+
                 mainLogger.debug(`Bot with token ${botInstance.getBotToken()} has been started`);
-            }
+            })
         } catch (error: unknown) {
-            if (error instanceof Error) {
-                mainLogger.debug(error.message);
-            }
-            if (typeof error === 'string') {
-                mainLogger.debug(error);
-            }
+            errorHandlingByType(error);
         }
     };
 
