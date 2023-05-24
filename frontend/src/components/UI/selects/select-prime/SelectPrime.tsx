@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import classNameCheck from '../../../../helpers/classNameCheck'
+import classNames from 'classnames';
+import React, { useState } from 'react';
 import cl from './selectPrime.module.scss'
 
 interface Props {
@@ -10,51 +10,51 @@ interface Props {
     selected: string
 }
 
-const SelectPrime = ({clName, name, onChange, selected, options}: Props) => {
+const SelectPrime = ({clName, name, onChange, selected, options}: Props): JSX.Element => {
 
     const [isActive, setIsActive] = useState(false)
 
     const toggleHandler = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setIsActive(prev => !prev)
+        setIsActive(prev => !prev);
     }
 
     const closeHandler = (e: React.MouseEvent) => {
         e.stopPropagation();
-        setIsActive(false)
+        setIsActive(false);
     }
     
     const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.stopPropagation();
-        onChange(+e.target.value)
+        onChange(+e.target.value);
     }
 
     return (
         <div
-            className={classNameCheck(cl.select, clName, isActive ? cl._active : '' )}
+            className={classNames(cl.select, clName, {[cl._active] : isActive} )}
             onClick={toggleHandler}
-    >
-        <span>{selected}</span>
-        <div className={cl.select__wrapper}>
-            {
-                options.map(filter =>
-                    <label 
-                        className={cl.select__option}
-                        key={filter.id}
-                        onClick={closeHandler}
-                    >
-                        {filter.name}
-                        <input
-                            type='radio'
-                            name={name}
-                            value={filter.id}
-                            onChange={onChangeHandler}
-                        />
-                    </label>
-                )
-            }
+        >
+            <span>{selected}</span>
+            <div className={cl.select__wrapper}>
+                {
+                    options.map(filter =>
+                        <label 
+                            className={cl.select__option}
+                            key={filter.id}
+                            onClick={closeHandler}
+                        >
+                            {filter.name}
+                            <input
+                                type='radio'
+                                name={name}
+                                value={filter.id}
+                                onChange={onChangeHandler}
+                            />
+                        </label>
+                    )
+                }
+            </div>
         </div>
-    </div>
     )
 }
 

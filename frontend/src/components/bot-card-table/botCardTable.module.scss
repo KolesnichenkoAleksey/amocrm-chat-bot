@@ -51,8 +51,23 @@
         padding: 0;
         border-left: 1px solid var(--table-border-color);
         .lead {
-            padding: 8px 10px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            padding: 8px 15px 8px 10px;
             border-bottom: 1px solid var(--table-border-color);
+            display: flex;
+            align-items: center;
+            column-gap: 10px;
+
+            a {
+                flex: 1 1 auto;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            button {
+                font-size: 14px;
+            }
         }
         .lead:last-child {
             border-bottom: 0;

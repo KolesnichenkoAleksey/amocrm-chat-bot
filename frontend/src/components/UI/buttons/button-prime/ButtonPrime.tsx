@@ -1,6 +1,6 @@
 import React from 'react';
 import cl from './buttonPrime.module.scss'
-import classNameCheck from './../../../../helpers/classNameCheck';
+import classNames from 'classnames';
 
 interface Props {
     clName?: string;
@@ -9,10 +9,10 @@ interface Props {
     onClick: (e: React.MouseEvent ) => void;
 }
 
-const ButtonPrime = ({ children, clName, style, onClick }: Props) => {
+const ButtonPrime = ({ children, clName, style, onClick }: Props): JSX.Element => {
     return (
         <button
-            className={classNameCheck(clName, cl.btn, cl[style])}
+            className={classNames(clName, cl.btn, cl[style])}
             onClick={onClick}
         >
             {children}

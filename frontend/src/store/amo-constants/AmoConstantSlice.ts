@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import AmoServices from "../../api/services/amo";
 import IAmoConstants from '../../types/AmoConstants';
-import IPipeline from './../../types/Pipeline';
+import IPipeline from '../../types/Pipeline';
 
 const initState: IAmoConstants = {
     SUBDOMAIN: '',
@@ -18,7 +19,13 @@ export const AmoConstantSlice = createSlice({
         setPipelines(state, action: PayloadAction<IPipeline[]>) {
             state.PIPELINES = action.payload
         },
-    }
+    },
+    extraReducers(builder) {
+        builder
+            .addCase( AmoServices.getPipelines.fulfilled, (state, action) => {
+                state.PIPELINES = action.payload;
+            })
+    },
 })
 
 export const { setSubdomain, setPipelines } = AmoConstantSlice.actions;

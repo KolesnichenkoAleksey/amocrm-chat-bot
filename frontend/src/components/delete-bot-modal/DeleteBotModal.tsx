@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react'
+import classNames from 'classnames';
+import React from 'react'
 import {createPortal} from 'react-dom';
-import ButtonPrime from '../../UI/buttons/button-prime';
+import ButtonPrime from '../UI/buttons/button-prime';
 import cl from './deleteBotModal.module.scss';
-import classNameCheck from './../../../helpers/classNameCheck';
 
 interface Props {
     isActive: boolean
@@ -11,7 +11,7 @@ interface Props {
     dataType: string,
 }
 
-const DeleteBotModal = ({ closeModal, dataType, deleteBot, isActive }: Props) => {
+const DeleteBotModal = ({ closeModal, dataType, deleteBot, isActive }: Props): JSX.Element => {
 
     const handleDeleteBot = () => {
         closeModal()
@@ -20,7 +20,7 @@ const DeleteBotModal = ({ closeModal, dataType, deleteBot, isActive }: Props) =>
 
     return createPortal(
     <div 
-        className={classNameCheck(cl.modal, isActive ? cl._active : '')} 
+        className={classNames(cl.modal, {[cl._active] : isActive})} 
         data-type={dataType} 
         onClick={closeModal}
     >

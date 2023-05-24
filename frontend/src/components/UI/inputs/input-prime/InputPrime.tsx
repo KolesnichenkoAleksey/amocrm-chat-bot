@@ -1,5 +1,5 @@
+import classNames from 'classnames';
 import React from 'react';
-import classNameCheck from '../../../../helpers/classNameCheck';
 import cl from './inputPrime.module.scss';
 
 interface Props {
@@ -10,10 +10,10 @@ interface Props {
     type: 'text' | 'email' | 'password' | 'tel',
 }
 
-const InputPrime = ({ clName, placeholder, value, onChange, type }: Props) => {
+const InputPrime = ({ clName, placeholder, value, onChange, type }: Props): JSX.Element => {
 	return (
 		<input
-			className={classNameCheck(clName, cl.input)}
+			className={classNames(clName, cl.input)}
 			placeholder={placeholder}
 			value={value}
 			onChange={onChange}

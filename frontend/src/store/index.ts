@@ -1,6 +1,6 @@
 import { configureStore, ThunkAction, Action, combineReducers } from '@reduxjs/toolkit';
-import AmoConstantSlice from '../store/reducers/AmoConstantSlice';
-import BotSlice from '../store/reducers/BotSlice';
+import AmoConstantSlice from './amo-constants/AmoConstantSlice';
+import BotSlice from './bots/BotSlice';
 
 
 const rootReducer = combineReducers({

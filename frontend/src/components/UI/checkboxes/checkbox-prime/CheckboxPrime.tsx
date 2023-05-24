@@ -1,6 +1,6 @@
+import classNames from 'classnames';
 import React from 'react';
 import cl from './checkboxPrime.module.scss';
-import classNameCheck from './../../../../helpers/classNameCheck';
 
 interface Props {
     clName?: string,
@@ -10,7 +10,7 @@ interface Props {
     isActive: boolean
 }
 
-const CheckboxPrime = ({ name, clName, value, onChange, isActive }: Props) => {
+const CheckboxPrime = ({ name, clName, value, onChange, isActive }: Props): JSX.Element => {
 
     const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.stopPropagation();
@@ -20,7 +20,7 @@ const CheckboxPrime = ({ name, clName, value, onChange, isActive }: Props) => {
     }
 
     return (
-        <label className={classNameCheck(clName, cl.checkbox, isActive ? cl._active : '')}>
+        <label className={classNames(clName, cl.checkbox, {[cl._active] : isActive})}>
             <input 
                 type="checkbox" 
                 name={name}

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { useAppDispatch } from '../../../app/hooks';
-import { delBotsById,  } from '../../../store/reducers/BotSlice';
-import IBot from '../../../types/Bot';
-import InputPrime from '../../UI/inputs/input-prime';
+import { useAppDispatch } from '../../hooks/useStore';
+import { delBotsById,  } from '../../store/bots/BotSlice';
+import IBot from '../../types/Bot';
+import InputPrime from '../UI/inputs/input-prime';
 import BotCardTable from '../bot-card-table';
 import DeleteBotModal from '../delete-bot-modal';
-import { useSearchBots } from '../hooks/searchBots';
+import { useSearchBots } from './hooks/searchBots';
 import cl from './botsTable.module.scss';
-import classNameCheck from './../../../helpers/classNameCheck';
-import CheckboxPrime from './../../UI/checkboxes/checkbox-prime/index';
-import ButtonPrime from './../../UI/buttons/button-prime/index';
+import CheckboxPrime from '../UI/checkboxes/checkbox-prime/index';
+import ButtonPrime from '../UI/buttons/button-prime/index';
+import classNames from 'classnames';
 
 interface Props {
     bots: IBot[]
@@ -17,7 +17,7 @@ interface Props {
 
 let searchTimer: NodeJS.Timeout;
 
-const BotsTable = ({bots}: Props) => {
+const BotsTable = ({bots}: Props): JSX.Element => {
     const dispatch = useAppDispatch()
     const [searchValue, setSearchValue] = useState('')
     const [searchQuery, setSearchQuery] = useState('')
@@ -78,10 +78,10 @@ const BotsTable = ({bots}: Props) => {
     }    
 
     return (
-        <>
+        <div>
             <table className={cl.table}>
                 <tr className={cl.table__header}>
-                    <th className={classNameCheck(cl['table__cell'], cl['table__cell_header'], cl['table__cell_checkbox'])}>
+                    <th className={classNames(cl['table__cell'], cl['table__cell_header'], cl['table__cell_checkbox'])}>
                         <CheckboxPrime
                             isActive={selectedBots.size !== 0 && selectedBots.size === bots.length}
                             clName={selectedBots.size && selectedBots.size !== bots.length 
@@ -92,7 +92,7 @@ const BotsTable = ({bots}: Props) => {
                             onChange={handleAllBotsSelection}
                         />
                     </th>
-                    <th className={classNameCheck(cl['table__cell'], cl['table__cell_header'])}>
+                    <th className={classNames(cl['table__cell'], cl['table__cell_header'])}>
                         <InputPrime
                             clName={cl['table__search-input']}
                             placeholder='Поиск (имя бота или Telegram группы)'
@@ -101,8 +101,8 @@ const BotsTable = ({bots}: Props) => {
                             type='text'
                         />
                     </th>
-                    <th className={classNameCheck(cl['table__cell'], cl['table__cell_header'])}>API ключ Telegram бота</th>
-                    <th className={classNameCheck(cl['table__cell'], cl['table__cell_header'])}>Воронка для создания новых Сделок</th>
+                    <th className={classNames(cl['table__cell'], cl['table__cell_header'])}>API ключ Telegram бота</th>
+                    <th className={classNames(cl['table__cell'], cl['table__cell_header'])}>Воронка для создания новых Сделок</th>
                 </tr>
                 {
                     searchedBots.map( bot => 
@@ -115,7 +115,7 @@ const BotsTable = ({bots}: Props) => {
                     )
                 }
 
-                <div className={classNameCheck(cl['table__edit-menu'], selectedBots.size ? cl._active : '')}>
+                <div className={classNames(cl['table__edit-menu'], {[cl._active]: selectedBots.size})}>
                     <ButtonPrime
                         style='base'
                         onClick={openDeleteBotModal}
@@ -132,7 +132,7 @@ const BotsTable = ({bots}: Props) => {
                 deleteBot={handleDeleteBots}
                 isActive={isDeleteModalActive}
             />
-        </>
+        </div>
     )
 }
 
