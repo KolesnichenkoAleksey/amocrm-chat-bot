@@ -14,8 +14,8 @@ interface Props {
 const DeleteBotModal = ({ closeModal, dataType, deleteBot, isActive }: Props): JSX.Element => {
 
     const handleDeleteBot = () => {
-        closeModal()
-        deleteBot()
+        closeModal();
+        deleteBot();
     }
 
     return createPortal(

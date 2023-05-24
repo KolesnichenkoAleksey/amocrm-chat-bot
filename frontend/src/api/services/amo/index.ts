@@ -7,12 +7,12 @@ export const Points = {
 }
 
 const AmoServices = {
-    getPipelines: createAsyncThunk('pipelines/getAll', async (subdomain: string) => {
+    getPipelines: createAsyncThunk('pipelines/getAll', async (subdomain: string): Promise<IPipeline[]> => {
         const $api = axios.create({    
             baseURL: `https://${subdomain}.amocrm.ru/api`,
         })
         const response = await $api.get(Points.GetPipelines);
-        return response.data._embedded.pipelines as IPipeline[];
+        return response.data._embedded.pipelines;
     }),
 }
 

@@ -29,8 +29,8 @@ const BotCardTable = ({bot, selectBot, isSelected}: Props): JSX.Element => {
         }
     }
 
-    const handleUnlinkLead = (botId: number, leadId: number) => {
-        dispatch(unlinkLead({botId, leadId}));
+    const handleUnlinkLead = (botId: number, tgGroupId: number, leadId: number) => {
+        dispatch(unlinkLead({botId, tgGroupId, leadId}));
     }
 
     return (
@@ -69,7 +69,7 @@ const BotCardTable = ({bot, selectBot, isSelected}: Props): JSX.Element => {
             }
             {
                 bot.relatedTgGroups.map( (group) => 
-                    <tr className={classNames(cl['bot-card'])}>
+                    <tr className={classNames(cl['bot-card'])} key={group.id}>
                         <td colSpan={2} className={classNames(cl['bot-card__cell'])}>{group.name}</td>
                         <td colSpan={2} className={classNames(cl['bot-card__cell'], cl['bot-card__leads'])}>
                             {
@@ -81,7 +81,7 @@ const BotCardTable = ({bot, selectBot, isSelected}: Props): JSX.Element => {
                                         <a href={`https://${SUBDOMAIN}.amocrm.ru/leads/detail/${lead.id}`}>{lead.name}</a>
                                         <ButtonPrime
                                             style='base'
-                                            onClick={() => handleUnlinkLead(bot._id, lead.id)}
+                                            onClick={() => handleUnlinkLead(bot._id, group.id, lead.id,)}
                                         >
                                             Отвязать
                                         </ButtonPrime>

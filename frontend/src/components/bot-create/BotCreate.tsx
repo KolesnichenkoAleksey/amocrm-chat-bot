@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useAppDispatch, useAppSelector } from '../../hooks/useStore'
+import { useAppSelector } from '../../hooks/useStore'
 import IPipeline from '../../types/Pipeline'
 import ButtonPrime from '../UI/buttons/button-prime'
 import InputPrime from '../UI/inputs/input-prime'
@@ -9,15 +9,14 @@ import { getPipelines } from './../../store/amo-constants/AmoConstantSelector';
 
 const BotCreate = (): JSX.Element => {
 
-    const pipelines: IPipeline[] = useAppSelector(getPipelines)
-    const dispatch = useAppDispatch()
+    const pipelines: IPipeline[] = useAppSelector(getPipelines);
     const [selectedPipeline, setSelectedPipeline] = useState<IPipeline>(pipelines.filter(pipe => pipe.is_main === true)[0])
     const [botApiKey, setBotApiKey] = useState('');
 
     const changeOption = (value: number) => {
         const newPipeline = pipelines.find(pipe => pipe.id === value)
         if (newPipeline) {
-            setSelectedPipeline(newPipeline)
+            setSelectedPipeline(newPipeline);
         }
     }
 

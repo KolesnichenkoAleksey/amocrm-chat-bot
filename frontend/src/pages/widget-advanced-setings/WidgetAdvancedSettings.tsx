@@ -20,8 +20,8 @@ const WidgetAdvancedSettings = ({SUBDOMAIN}: Props): JSX.Element => {
 
 	useEffect(() => {
         dispatch(AmoServices.getPipelines(SUBDOMAIN));
-        dispatch(setSubdomain(SUBDOMAIN))
-	}, [dispatch])
+        dispatch(setSubdomain(SUBDOMAIN));
+	}, [])
 
     return (
         <div className={cl.settings}>

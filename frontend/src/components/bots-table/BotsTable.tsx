@@ -18,12 +18,12 @@ interface Props {
 let searchTimer: NodeJS.Timeout;
 
 const BotsTable = ({bots}: Props): JSX.Element => {
-    const dispatch = useAppDispatch()
-    const [searchValue, setSearchValue] = useState('')
-    const [searchQuery, setSearchQuery] = useState('')
-    const [isDeleteModalActive, setIsDeleteModalActive] = useState(false)
-    const [selectedBots, setSelectedBots] = useState(() => new Set<number>())
-    const searchedBots = useSearchBots(bots, searchQuery)
+    const dispatch = useAppDispatch();
+    const [searchValue, setSearchValue] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isDeleteModalActive, setIsDeleteModalActive] = useState(false);
+    const [selectedBots, setSelectedBots] = useState(() => new Set<number>());
+    const searchedBots = useSearchBots(bots, searchQuery);
 
     const search = (query: string) => {
         setSearchQuery(query);
@@ -37,30 +37,30 @@ const BotsTable = ({bots}: Props): JSX.Element => {
     }
 
     const closeDeleteModal = () => {
-        setIsDeleteModalActive(false)
-        document.body.classList.remove('_scroll-lock')
-        setSelectedBots(new Set<number>())
+        setIsDeleteModalActive(false);
+        document.body.classList.remove('_scroll-lock');
+        setSelectedBots(new Set<number>());
     }
 
     const openDeleteBotModal = () => {
-        document.body.classList.add('_scroll-lock')
-        setIsDeleteModalActive(true)
+        document.body.classList.add('_scroll-lock');
+        setIsDeleteModalActive(true);
     }
 
     const handleDeleteBots = () => {
         if (selectedBots.size) {
             const botsToDeleting = Array.from(selectedBots);
-            setSelectedBots(new Set<number>())
-            dispatch(delBotsById(botsToDeleting))
+            setSelectedBots(new Set<number>());
+            dispatch(delBotsById(botsToDeleting));
         }
             
     }
 
     const handleAllBotsSelection = () => {
         if (!selectedBots.size) {
-            setSelectedBots(new Set<number>(bots.map(bot => bot._id)))
+            setSelectedBots(new Set<number>(bots.map(bot => bot._id)));
         } else {
-            setSelectedBots(new Set<number>())
+            setSelectedBots(new Set<number>());
         }
     }
 

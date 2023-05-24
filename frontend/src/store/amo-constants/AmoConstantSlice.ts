@@ -5,7 +5,7 @@ import IPipeline from '../../types/Pipeline';
 
 const initState: IAmoConstants = {
     SUBDOMAIN: '',
-    PIPELINES: []
+    PIPELINES: [],
 }
 
 

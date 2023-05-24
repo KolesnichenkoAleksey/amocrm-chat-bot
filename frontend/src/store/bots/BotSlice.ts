@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import IBot from '../../types/Bot';
 import IPipeline from '../../types/Pipeline';
+import ITgGroup from './../../types/TgGroup';
 
 
 interface BotState {
@@ -19,6 +20,7 @@ const initState: BotState = {
             },
             relatedTgGroups: [
                 {
+                    id: 1323339843,
                     name: 'Tg group 1',
                     leads: [
                         {
@@ -32,6 +34,7 @@ const initState: BotState = {
                     ]
                 },
                 {
+                    id: 13255556243,
                     name: 'Tg group 2',
                     leads: [
                         {
@@ -56,6 +59,7 @@ const initState: BotState = {
             },
             relatedTgGroups: [
                 {
+                    id: 13257889843,
                     name: 'test2',
                     leads: [
                         {
@@ -69,6 +73,7 @@ const initState: BotState = {
                     ]
                 },
                 {
+                    id: 13255892943,
                     name: 'Tsdfsd 2',
                     leads: [
                         {
@@ -112,18 +117,14 @@ export const botSlice = createSlice({
                 state.bots[index].pipeline = action.payload.pipeline;
             }
         },
-        unlinkLead(state, action: PayloadAction<{botId: number, leadId: number}>) {
-            state.bots = state.bots.map(bot => {
-                if (bot._id !== action.payload.botId) {                    
-                    return bot;
+        unlinkLead(state, action: PayloadAction<{botId: number, tgGroupId: number, leadId: number}>) {
+            const selectedBot = state.bots.find(bot => bot._id === action.payload.botId);
+            if (selectedBot) {
+                const selectedTgGroup = selectedBot.relatedTgGroups.find(tgGroup => tgGroup.id === action.payload.tgGroupId);
+                if (selectedTgGroup) {
+                    selectedTgGroup.leads = selectedTgGroup.leads.filter(lead => lead.id !== action.payload.leadId);
                 }
-                bot.relatedTgGroups = bot.relatedTgGroups.map(group => {
-                    group.leads = group.leads.filter(lead => lead.id !== action.payload.leadId)
-                    return group;
-                });                
-                return bot;
-            })
-
+            }
         }
     }
 })
