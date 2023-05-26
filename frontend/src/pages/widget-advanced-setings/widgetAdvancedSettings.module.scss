@@ -1,4 +1,7 @@
 .settings {
+    * {
+        box-sizing: border-box;
+    }
     
     &__block {
         padding: 18px 18px 29px;
