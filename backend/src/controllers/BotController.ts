@@ -15,7 +15,7 @@ import {
 } from '../@types/express-custom/RequestBot';
 
 class BotController {
-    async add(req: TypedRequestAddBot, res: Response, next: NextFunction) {
+    async addBot(req: TypedRequestAddBot, res: Response, next: NextFunction) {
         try {
             const subdomain = req.body.subdomain || undefined;
 
@@ -45,11 +45,6 @@ class BotController {
                 return next(ApiError.notFound('Не был удалось узнать имя бота, возможно проблема в токене!'));
             }
 
-            const addedBot = {
-                botToken,
-                botName
-            };
-
             const appUser: UserInterface | null = await mongoManager.getWidgetUserBySubdomain(subdomain);
 
             if (!appUser) {
@@ -61,6 +56,11 @@ class BotController {
                 userLogger.debug(`Бот с токеном ${botToken} уже привязан к аккаунту клиента`);
                 return next(ApiError.notFound(`Бот с токеном ${botToken} уже привязан к аккаунту клиента`));
             }
+
+            const addedBot = {
+                botToken,
+                botName
+            };
 
             await mongoManager.updateUser({ ...appUser, initializingBots: [...appUser.initializingBots, addedBot] });
 
@@ -118,7 +118,7 @@ class BotController {
         }
     }
 
-    async getAll(req: TypedRequestGetAllBot, res: Response, next: NextFunction) {
+    async getAllBots(req: TypedRequestGetAllBot, res: Response, next: NextFunction) {
         try {
             const subdomain = req.query.subdomain || undefined;
 

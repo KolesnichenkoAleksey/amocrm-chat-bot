@@ -2,7 +2,7 @@ import axios from 'axios';
 import { mainLogger } from '../../components/logger/logger';
 
 class TelegramAPI {
-    getMe = async (botToken: string) => {
+    async getMe (botToken: string) {
         try {
             const { data } = await axios.post(`https://api.telegram.org/bot${botToken}/getMe`, {});
 
