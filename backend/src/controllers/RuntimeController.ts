@@ -5,7 +5,7 @@ import { ApiError } from '../error/ApiError';
 class RuntimeController {
     async ping(req: Request, res: Response, next: NextFunction) {
         try {
-            return res.status(StatusCodes.Ok.Code).send(`pong ${Date.now()}`);
+            return res.status(StatusCodes.Ok.Code).json({message: `pong ${Date.now()}`});
         } catch (error: unknown) {
 
             if (error instanceof Error) {

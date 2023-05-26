@@ -18,7 +18,6 @@ const PORT = process.env.PORT || 3000;
 
 const MONGO_URI = process.env.MONGO_CONNECTION || 'mongodb://localhost:27017/amocrmChatBot';
 
-
 const app = express();
 
 app.use(cors());
@@ -29,12 +28,6 @@ app.use(router);
 
 app.use(errorHandler);
 
-// Моковые данные, которые будут в дальнейшем браться из базы, для наглядности они находятся тут
-const mockBotTokens: string[] = [
-    '5969836269:AAEUT45drow1aAD0dM6iw8LcXlcwg1V1a-E',
-    '5313087216:AAF9X15tR5mzoyu4yN6kb3IHC6BC8fOknN8'
-];
-
 const start = async (): Promise<void> => {
     try {
         await mongoManager.connect(MONGO_URI, MongooseSettings);
@@ -44,10 +37,21 @@ const start = async (): Promise<void> => {
     }
 };
 
-start().then(() => {
+start().then(async () => {
     mainLogger.debug(`Server started on Port ${PORT}`);
     mainLogger.debug('Database connection has been successful');
 
-    botsState.initializeBots(mockBotTokens).launchInitializedBots();
+    const allUsersBots = await mongoManager.getAllBots();
+
+    if (allUsersBots) {
+        const allUsersBotsTokens = allUsersBots
+            .map((initializingBots) => initializingBots.initializingBots)
+            .flat()
+            .map((bot) => bot.botToken);
+
+        botsState.initializeBots(allUsersBotsTokens).launchInitializedBots();
+
+        mainLogger.debug(`Bots in the number of ${new Set(botsState.getBots().map(bot => bot.botToken)).size} pieces were launched`);
+    }
 });
 

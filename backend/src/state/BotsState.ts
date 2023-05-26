@@ -1,38 +1,52 @@
 import { Bot } from '../components/bot/Bot';
 import { mainLogger } from '../components/logger/logger';
 import { errorHandlingByType } from '../error/errorHandlingByType';
+import { BotState } from '../@types/bot/State';
 
 class BotsState {
 
-    private botTokens: string[];
-    private botInstances: Bot[];
+    private bots: BotState[];
 
     constructor() {
-        this.botTokens = [];
-        this.botInstances = [];
+        this.bots = [];
     }
 
-    initializeBots = (botTokens: string[]): BotsState => {
+    getBots(): BotState[] {
+        return this.bots;
+    };
 
-        this.botTokens = botTokens;
+    setBots(bots: BotState[]): void {
+        this.bots = bots;
+    };
 
-        this.botTokens.forEach((botToken) => {
-            this.botInstances.push(new Bot(botToken));
+    initializeBots(botTokens: string[]): this {
+
+        botTokens.forEach((botToken: string) => {
+            this.bots.push({ botToken });
+        });
+
+        this.bots = this.bots.map((bot) => {
+            return {
+                botToken: bot.botToken,
+                botInstance: new Bot(bot.botToken)
+            };
         });
 
         return this;
     };
 
-    launchInitializedBots = (): void => {
+    launchInitializedBots(): void {
         try {
-            this.botInstances.forEach((botInstance: Bot) => {
-                botInstance
-                    .startListeners()
-                    .launchInstance()
-                    .then();
+            this.bots.forEach((bot: BotState) => {
+                if (bot.botInstance instanceof Bot) {
+                    bot.botInstance
+                        .startListeners()
+                        .launchInstance()
+                        .then();
 
-                mainLogger.debug(`Bot with token ${botInstance.getBotToken()} has been started`);
-            })
+                    mainLogger.debug(`Bot with token ${bot.botInstance.getBotToken()} has been started`);
+                }
+            });
         } catch (error: unknown) {
             errorHandlingByType(error);
         }
