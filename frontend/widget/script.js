@@ -21,8 +21,8 @@ define(['./index.js'], function (App) {
 				return true;
 			},
 			advancedSettings() {
-				const SUBDOMAIN = system.subdomain;
-				App.default.advancedSettings(SUBDOMAIN);
+				const subdomain = system.subdomain;
+				App.default.advancedSettings(subdomain);
 			},
 			onSave() {
 				return true;

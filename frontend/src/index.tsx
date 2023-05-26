@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { store } from './store';
 import WidgetAdvancedSettings from './pages/widget-advanced-setings';
 import '../widget/modules/settingsREON/style-settings.css';
+import './index.css'
 
 const Wid = {
 
@@ -23,7 +24,7 @@ const Wid = {
         return true;
     },
 
-    advancedSettings(SUBDOMAIN: string) {
+    advancedSettings(subdomain: string) {
         const rootAdvancedWidgetSettings:HTMLElement | null = document.getElementById('list_page_holder');
 
         if (rootAdvancedWidgetSettings) {
@@ -31,7 +32,7 @@ const Wid = {
             rootAdvancedSettings.render(
                 <Provider store={store}>
                     <WidgetAdvancedSettings
-                        SUBDOMAIN={SUBDOMAIN}
+                        subdomain={subdomain}
                     />
                 </Provider>
             );

@@ -4,23 +4,22 @@ import BotsTable from '../../components/bots-table';
 import cl from './widgetAdvancedSettings.module.scss';
 import BotCreate from '../../components/bot-create/BotCreate';
 import { setSubdomain } from '../../store/amo-constants/AmoConstantSlice';
-import '../../index.css';
 import classNames from 'classnames';
 import { getBots } from './../../store/bots/BotSelector';
 import AmoServices from '../../api/services/amo';
 
 interface Props {
-	SUBDOMAIN: string 
+	subdomain: string 
 }
 
-const WidgetAdvancedSettings = ({SUBDOMAIN}: Props): JSX.Element => {
+const WidgetAdvancedSettings = ({subdomain}: Props): JSX.Element => {
     const bots = useAppSelector(getBots);
 
     const dispatch = useAppDispatch();
 
 	useEffect(() => {
-        dispatch(AmoServices.getPipelines(SUBDOMAIN));
-        dispatch(setSubdomain(SUBDOMAIN));
+        dispatch(AmoServices.getPipelines(subdomain));
+        dispatch(setSubdomain(subdomain));
 	}, [])
 
     return (

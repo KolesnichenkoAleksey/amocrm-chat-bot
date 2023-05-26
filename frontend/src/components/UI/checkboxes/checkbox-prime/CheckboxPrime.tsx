@@ -15,8 +15,12 @@ const CheckboxPrime = ({ name, clName, value, onChange, isActive }: Props): JSX.
     const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.stopPropagation();
         const value = e.target.getAttribute('data-value') ? Number(e.target.getAttribute('data-value')) : undefined;
-        if (value) onChange(value);
-        else onChange(-1);
+        if (value) {
+            onChange(value);
+        }
+        else {
+            onChange(-1);
+        }
     }
 
     return (

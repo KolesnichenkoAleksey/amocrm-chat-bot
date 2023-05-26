@@ -20,7 +20,7 @@ const BotCardTable = ({bot, selectBot, isSelected}: Props): JSX.Element => {
     const dispatch = useAppDispatch();
 
     const pipelines: IPipeline[] = useAppSelector(getPipelines);
-    const SUBDOMAIN = useAppSelector(getSubdomain);
+    const subdomain = useAppSelector(getSubdomain);
 
     const changeOption = (value: number) => {
         const newPipeline = pipelines.find(pipe => pipe.id === value);
@@ -78,7 +78,7 @@ const BotCardTable = ({bot, selectBot, isSelected}: Props): JSX.Element => {
                                         key={lead.id}
                                         className={cl.lead}
                                     >
-                                        <a href={`https://${SUBDOMAIN}.amocrm.ru/leads/detail/${lead.id}`}>{lead.name}</a>
+                                        <a href={`https://${subdomain}.amocrm.ru/leads/detail/${lead.id}`}>{lead.name}</a>
                                         <ButtonPrime
                                             style='base'
                                             onClick={() => handleUnlinkLead(bot._id, group.id, lead.id,)}

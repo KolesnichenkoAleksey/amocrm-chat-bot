@@ -26,7 +26,7 @@ const SelectPrime = ({clName, name, onChange, selected, options}: Props): JSX.El
     
     const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.stopPropagation();
-        onChange(+e.target.value);
+        onChange(Number(e.target.value));
     }
 
     return (

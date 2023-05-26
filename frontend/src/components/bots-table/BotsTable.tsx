@@ -10,30 +10,23 @@ import cl from './botsTable.module.scss';
 import CheckboxPrime from '../UI/checkboxes/checkbox-prime/index';
 import ButtonPrime from '../UI/buttons/button-prime/index';
 import classNames from 'classnames';
+import useSearchDebounce from '../../hooks/useSearchDebounce';
 
 interface Props {
     bots: IBot[]
 }
 
-let searchTimer: NodeJS.Timeout;
-
 const BotsTable = ({bots}: Props): JSX.Element => {
     const dispatch = useAppDispatch();
     const [searchValue, setSearchValue] = useState('');
-    const [searchQuery, setSearchQuery] = useState('');
     const [isDeleteModalActive, setIsDeleteModalActive] = useState(false);
     const [selectedBots, setSelectedBots] = useState(() => new Set<number>());
-    const searchedBots = useSearchBots(bots, searchQuery);
-
-    const search = (query: string) => {
-        setSearchQuery(query);
-    }
+    const searchQuery = useSearchDebounce(searchValue);
+    const searchedBots = useSearchBots(bots, searchQuery); 
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        clearTimeout(searchTimer);
         const query = e.target.value;
         setSearchValue(query);
-        searchTimer = setTimeout(() => search(query), 500);
     }
 
     const closeDeleteModal = () => {
@@ -53,7 +46,6 @@ const BotsTable = ({bots}: Props): JSX.Element => {
             setSelectedBots(new Set<number>());
             dispatch(delBotsById(botsToDeleting));
         }
-            
     }
 
     const handleAllBotsSelection = () => {
@@ -65,7 +57,9 @@ const BotsTable = ({bots}: Props): JSX.Element => {
     }
 
     const handleSelectBot = (id: number) => {
-        if (id === -1) return;
+        if (id === -1) {
+            return;
+        }
         if (selectedBots.has(id)) {
             setSelectedBots(prev => {
                 const next = new Set(prev);
@@ -84,10 +78,7 @@ const BotsTable = ({bots}: Props): JSX.Element => {
                     <th className={classNames(cl['table__cell'], cl['table__cell_header'], cl['table__cell_checkbox'])}>
                         <CheckboxPrime
                             isActive={selectedBots.size !== 0 && selectedBots.size === bots.length}
-                            clName={selectedBots.size && selectedBots.size !== bots.length 
-                                ? cl.table__checkbox_cancel 
-                                : ''
-                            }
+                            clName={classNames({[cl.table__checkbox_cancel]: selectedBots.size && selectedBots.size !== bots.length})}
                             name={'bots-checkbox'}
                             onChange={handleAllBotsSelection}
                         />
