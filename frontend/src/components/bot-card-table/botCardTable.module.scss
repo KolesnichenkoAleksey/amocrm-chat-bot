@@ -1,0 +1,76 @@
+.bot-card {
+    font-size: 17px;
+
+    &__cell {
+        border-bottom: 1px solid var(--table-border-color);
+        max-width: 0;
+        padding: 8px 10px;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
+
+        &_header {
+            background-color: var(--bot-card-bg-color);
+            border-right: 1px solid var(--table-border-color);
+            color: var(--table-th-color);
+            font-weight: 600;
+            font-size: 14px;
+            &:last-child {
+                border-right-color: transparent;
+            }
+        }
+
+        &_checkbox {
+            border-bottom: 1px solid var(--table-border-color);
+            border-right: 1px solid transparent;
+            width: 40px;
+            max-width: 40px;
+            padding: 10px;
+            vertical-align: middle;
+        }
+    }
+
+    &:last-child {
+        .bot-card__cell {
+            border-bottom: 1px solid var(--table-border-bottom-color);
+        }
+    }
+    
+    &__select {
+        overflow-x: visible;
+    }
+
+    &__pipelines {
+        background-color: var(--bg-color);
+    }
+
+    &__delete-btn {
+        margin-top: 15px;
+    }
+
+    &__leads {
+        padding: 0;
+        border-left: 1px solid var(--table-border-color);
+        .lead {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            padding: 8px 15px 8px 10px;
+            border-bottom: 1px solid var(--table-border-color);
+            display: flex;
+            align-items: center;
+            column-gap: 10px;
+
+            a {
+                flex: 1 1 auto;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            button {
+                font-size: 14px;
+            }
+        }
+        .lead:last-child {
+            border-bottom: 0;
+        }
+    }
+}

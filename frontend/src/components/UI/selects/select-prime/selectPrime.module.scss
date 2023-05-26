@@ -1,0 +1,58 @@
+.select {
+    cursor: pointer;
+    outline: 0;
+    padding: 9px 10px;
+    color: inherit;
+    position: relative;
+
+    span {
+        display: block;
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__wrapper {
+        position: absolute;
+        background-color: inherit;
+        top: calc(100% + 1px);
+        left: 0;
+        width: 100%;
+        border: 1px solid var(--table-border-color);
+        border-radius: 5px;
+        pointer-events: none;
+        opacity: 0;
+        visibility: hidden;
+        transition-duration: .2s;
+        max-height: 200px;
+        transform-origin: top;
+        overflow-x: hidden;
+        z-index: 100;
+    }
+
+    &._active &__wrapper {
+        pointer-events: all;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    &__option {
+        cursor: pointer;
+        display: block;
+        padding: 5px 10px;
+        color: inherit;
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        transition-duration: .2s;
+        
+        &:hover {
+            background-color: var(--table-border-color);
+        }
+
+        & input {
+            display: none;
+        }
+    }
+}

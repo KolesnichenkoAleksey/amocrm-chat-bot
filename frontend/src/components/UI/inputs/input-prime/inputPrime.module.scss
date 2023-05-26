@@ -1,0 +1,11 @@
+.input {
+    display: block;
+    background-color: transparent;
+    outline: 0;
+    padding: 10px;
+    color: inherit;
+  
+    &::placeholder {
+      color: inherit;
+    }
+}

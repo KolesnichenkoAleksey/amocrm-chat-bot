@@ -1,0 +1,29 @@
+.btn {
+    cursor: pointer;
+    display: block;
+    width: fit-content;
+    background-color: inherit;
+    outline: 0;
+    transition-duration: .2s;
+
+    
+}
+
+.base {
+    color: inherit;
+}
+.delete {
+    color: #e45c5c;
+    &:hover {
+        color: #fd4545;
+    }
+}
+.add {
+    color: #f5f5f5;
+    padding: 10px 15px;
+    background-color: #4c8bf7;
+    border-radius: 5px;
+    &:hover {
+        filter: brightness(90%);
+    }
+}
