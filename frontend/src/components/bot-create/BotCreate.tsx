@@ -1,17 +1,25 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAppSelector } from '../../hooks/useStore'
 import IPipeline from '../../types/Pipeline'
 import ButtonPrime from '../UI/buttons/button-prime'
 import InputPrime from '../UI/inputs/input-prime'
 import SelectPrime from '../UI/selects/select-prime'
 import cl from './botCreate.module.scss'
-import { getPipelines } from './../../store/amo-constants/AmoConstantSelector';
+import { getPipelines, getSubdomain } from './../../store/amo-constants/AmoConstantSelector';
+import TelegramBotServices from './../../api/services/telegram-bot/index';
+import { useAppDispatch } from './../../hooks/useStore';
+import { getBotError, getIsBotAdding } from './../../store/bots/BotSelector';
+import classNames from 'classnames';
+import Spinner from '../UI/spinner/Spinner'
 
 const BotCreate = (): JSX.Element => {
-
     const pipelines: IPipeline[] = useAppSelector(getPipelines);
-    const [selectedPipeline, setSelectedPipeline] = useState<IPipeline>(pipelines.filter(pipe => pipe.is_main === true)[0])
+    const [selectedPipeline, setSelectedPipeline] = useState<IPipeline>(pipelines[0])
     const [botApiKey, setBotApiKey] = useState('');
+    const subdomain = useAppSelector(getSubdomain);
+    const dispatch = useAppDispatch();
+    const error = useAppSelector(getBotError);
+    const isBotAdding = useAppSelector(getIsBotAdding);
 
     const changeOption = (value: number) => {
         const newPipeline = pipelines.find(pipe => pipe.id === value)
@@ -20,42 +28,50 @@ const BotCreate = (): JSX.Element => {
         }
     }
 
-    const handleCreateBot = () => {
-        const newBot = {
-            apiKey: botApiKey,
-            pipeline: selectedPipeline
-        }
-        setBotApiKey('')
-        console.log(newBot);
+    const handleCreateBot = async () => {
+        setBotApiKey('');
+        dispatch(TelegramBotServices.addBot({subdomain, pipelineId: selectedPipeline.id, botToken: botApiKey}));
     }
 
+    useEffect(() => {
+        if (pipelines) {
+            const mainPipeline = pipelines.filter(pipe => pipe.is_main === true)[0]
+            setSelectedPipeline(mainPipeline)
+        }        
+    }, [pipelines])
+
     return (
-        <div className={cl['bot-create']}>
-            <div className={cl['bot-create__table']}>
-                <div className={cl['bot-create__input']}>
+        <div className={cl['reon-amocrm-tg-chat-bot-bot-create']}>
+            <div className={cl['reon-amocrm-tg-chat-bot-bot-create__table']}>
+                <div className={classNames(cl['reon-amocrm-tg-chat-bot-bot-create__input'], {[cl._error]: error})}>
                     <InputPrime
                         type='text'
                         onChange={(e) => setBotApiKey(e.target.value)}
                         value={botApiKey}
-                        placeholder='API ключ Telegram бота'
+                        placeholder={error || 'Введите Token telegram бота'}
                     />
                 </div>
-                <div className={cl['bot-create__select']}>
+                <div className={cl['reon-amocrm-tg-chat-bot-bot-create__select']}>
                     <SelectPrime
-                        name='bot-create-pipeline-select'
+                        clName={cl['reon-amocrm-tg-chat-bot-bot-create__pipelines']}
+                        name='reon-amocrm-tg-chat-bot-bot-create-pipeline-select'
                         onChange={changeOption}
                         options={pipelines}
                         selected={selectedPipeline?.name}
-                        clName={cl['bot-create__pipelines']}
+                        withArrow={true}
                     />
                 </div>
             </div>
             <ButtonPrime
-                clName={cl['bot-create__btn']}
+                clName={cl['reon-amocrm-tg-chat-bot-bot-create__btn']}
                 style='add'
                 onClick={handleCreateBot}
             >
-                Добавить бота
+                {
+                    isBotAdding 
+                    ? <Spinner/>
+                    : 'Добавить бота'
+                }
             </ButtonPrime>
         </div>
     )

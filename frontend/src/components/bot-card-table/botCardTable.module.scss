@@ -1,12 +1,31 @@
-.bot-card {
+.reon-amocrm-tg-chat-bot-bot-card {
     font-size: 17px;
 
     &__cell {
         border-bottom: 1px solid var(--table-border-color);
         max-width: 0;
         padding: 8px 10px;
+        vertical-align: middle;
         overflow-x: hidden;
         text-overflow: ellipsis;
+        user-select: text;
+        white-space: nowrap;
+
+        &_bot-name {
+            cursor: pointer;
+        }
+
+        &_copy,
+        &_dropdown {
+            padding: 0;
+        }
+
+        &:first-child {
+            border-left: 2px solid transparent;
+        }
+        &:last-child {
+            border-right-color: transparent;
+        }
 
         &_header {
             background-color: var(--bot-card-bg-color);
@@ -50,27 +69,73 @@
     &__leads {
         padding: 0;
         border-left: 1px solid var(--table-border-color);
-        .lead {
-            text-overflow: ellipsis;
+    }
+
+    &__lead {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        padding: 8px 15px 8px 10px;
+        border-bottom: 1px solid var(--table-border-color);
+        display: flex;
+        align-items: center;
+        column-gap: 10px;
+
+        a {
+            flex: 1 1 auto;
             overflow: hidden;
-            padding: 8px 15px 8px 10px;
-            border-bottom: 1px solid var(--table-border-color);
-            display: flex;
-            align-items: center;
-            column-gap: 10px;
-
-            a {
-                flex: 1 1 auto;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            button {
-                font-size: 14px;
-            }
+            text-overflow: ellipsis;
         }
-        .lead:last-child {
+
+        button {
+            font-size: 14px;
+        }
+        &:last-child {
             border-bottom: 0;
         }
+    }
+
+    &__copy {
+        padding: 8px 10px;
+    }
+
+    &__dropdown {
+        display: flex;
+        align-items: center;
+        column-gap: 10px;
+        height: 100%;
+        padding: 8px 10px;
+    }
+
+    &._active {
+        .reon-amocrm-tg-chat-bot-bot-card__cell:first-child {
+            border-left: 2px solid var(--table-border-color);
+        }
+    }
+}
+.reon-amocrm-tg-chat-bot-dropdown {
+    transition-duration: 0s;
+
+    &__title {
+        flex: 1 1 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__arrow {
+        flex: 0 0 auto;
+        transform: rotateX(0deg);
+        transition-duration: .2s;
+        opacity: 0;
+        visibility: hidden;
+    }
+    &:hover &__arrow {
+        opacity: 1;
+        visibility: visible;
+    }
+    &._active &__arrow {
+        transform: rotateX(180deg);
+        opacity: 1;
+        visibility: visible;
     }
 }

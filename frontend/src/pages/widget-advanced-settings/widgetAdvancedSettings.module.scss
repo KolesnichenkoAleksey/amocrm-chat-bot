@@ -1,4 +1,7 @@
-.settings {
+.reon-amocrm-tg-chat-bot-settings {
+    * {
+        box-sizing: border-box;
+    }
     
     &__block {
         padding: 18px 18px 29px;
@@ -15,7 +18,7 @@
     }
 }
 
-.block {
+.reon-amocrm-tg-chat-bot-block {
 
     &__title {
         margin-bottom: 25px;
@@ -24,8 +27,13 @@
     }
 }
 
-.settings__block_table {
-    .block__title {
-        margin-left: 10px;
+.reon-amocrm-tg-chat-bot-settings__block_table {
+    .reon-amocrm-tg-chat-bot-block__title {
+        margin-left: 18px;
     }
+}
+
+.reon-amocrm-tg-chat-bot-loading-table {
+    width: 100%;
+    height: 42px;
 }

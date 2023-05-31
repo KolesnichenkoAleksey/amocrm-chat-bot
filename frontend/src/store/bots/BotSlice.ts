@@ -1,19 +1,27 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import TelegramBotServices from "../../api/services/telegram-bot";
 import IBot from '../../types/Bot';
 import IPipeline from '../../types/Pipeline';
-import ITgGroup from './../../types/TgGroup';
 
 
 interface BotState {
     bots: IBot[];
+    isBotsLoading: boolean,
+    isBotAdding: boolean,
+    isBotsDeleting: boolean,
+    error: string,
 }
 
 const initState: BotState = {
+    isBotsLoading: false,
+    isBotAdding: false,
+    isBotsDeleting: false,
+    error: '',
     bots: [
         {
-            _id: 23474567234,
-            name: 'TestBotName',
-            apiKey: 'jhsd234jjhdsf3',
+            _id: '2347jhfgd234',
+            botName: 'TestBotName',
+            botToken: 'jhsd234jjhdsf3',
             pipeline: {
                 id: 6804418,
                 name: 'Воронка'
@@ -50,9 +58,52 @@ const initState: BotState = {
             ]
         },
         {
-            _id: 37485834783,
-            name: 'bot/ {2}]',
-            apiKey: 'jhsd2sdfdsfg34jjhdsf3',
+            _id: '3748sdfsd44783',
+            botName: 'amocrm tg',
+            botToken: 'jhsd2sdsdfdfds6534763jjhdsf3',
+            pipeline: {
+                id: 6804418,
+                name: 'Воронка'
+            },
+            relatedTgGroups: [
+                {
+                    id: 1325783445843,
+                    name: 'Doors sale',
+                    leads: [
+                        {
+                            name: 'lead 232443',
+                            id: 2362654474675,
+                        },
+                        {
+                            name: 'lead 14345',
+                            id: 6542344675736
+                        }
+                    ]
+                },
+                {
+                    id: 13255892943,
+                    name: 'Window Sale',
+                    leads: [
+                        {
+                            name: 'lead 174534',
+                            id: 5637893450075,
+                        },
+                        {
+                            name: 'lead 254163',
+                            id: 3243267785423
+                        },
+                        {
+                            name: 'lead 1643675',
+                            id: 5754318461654,
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            _id: '374858hjlj83',
+            botName: 'bot/ {2}]',
+            botToken: 'jhsd2sdfdsfg34jjhdsf3',
             pipeline: {
                 id: 6804418,
                 name: 'Воронка'
@@ -98,6 +149,13 @@ const initState: BotState = {
 export const botSlice = createSlice({
     name: 'bots',
     initialState: initState,
+    // {
+    //     isBotsLoading: false,
+    //     isBotAdding: false,
+    //     isBotsDeleting: false,
+    //     error: '',
+    //     bots: [],
+    // } as BotState,
     reducers: {
         setBots(state, action: PayloadAction<IBot[]>) {
             state.bots = action.payload;
@@ -105,19 +163,16 @@ export const botSlice = createSlice({
         addBot(state, action: PayloadAction<IBot>) {
             state.bots.push(action.payload);
         },
-        delBotById(state, action: PayloadAction<number>) {
-            state.bots = state.bots.filter(bot => bot._id !== action.payload);
+        delBotsByToken(state, action: PayloadAction<string[]>) {
+            state.bots = state.bots.filter(bot => !action.payload.includes(bot.botToken));
         },
-        delBotsById(state, action: PayloadAction<number[]>) {
-            state.bots = state.bots.filter(bot => !action.payload.includes(bot._id));
-        },
-        editBotPipeline(state, action: PayloadAction<{botId: number, pipeline:IPipeline}>) {
+        editBotPipeline(state, action: PayloadAction<{botId: string, pipeline:IPipeline}>) {
             const index = state.bots.findIndex(bot => bot._id === action.payload.botId);
             if (index !== -1) {
                 state.bots[index].pipeline = action.payload.pipeline;
             }
         },
-        unlinkLead(state, action: PayloadAction<{botId: number, tgGroupId: number, leadId: number}>) {
+        unlinkLead(state, action: PayloadAction<{botId: string, tgGroupId: number, leadId: number}>) {
             const selectedBot = state.bots.find(bot => bot._id === action.payload.botId);
             if (selectedBot) {
                 const selectedTgGroup = selectedBot.relatedTgGroups.find(tgGroup => tgGroup.id === action.payload.tgGroupId);
@@ -126,9 +181,59 @@ export const botSlice = createSlice({
                 }
             }
         }
-    }
+    },
+    extraReducers(builder) {
+        builder
+            .addCase( TelegramBotServices.addBot.pending, (state) => {
+                state.isBotAdding = true;
+            })
+            .addCase( TelegramBotServices.addBot.fulfilled, (state, action) => {
+                console.log(action.payload); 
+                // ==========================================
+                action.payload.relatedTgGroups = [];             
+                // ==========================================
+                state.bots.push(action.payload);
+                state.error = '';
+                state.isBotAdding = false;
+            })
+            .addCase( TelegramBotServices.addBot.rejected, (state, action) => {
+                console.log(action.payload);
+                state.error = action.payload || 'error'
+                state.isBotAdding = false;
+            })
+            .addCase( TelegramBotServices.deleteBots.pending, (state) => {
+                state.isBotsDeleting = true;
+            })
+            .addCase( TelegramBotServices.deleteBots.fulfilled, (state, action) => {
+                state.bots = state.bots.filter(bot => !action.payload.includes(bot._id));
+                state.error = '';
+                state.isBotsDeleting = false;
+            })
+            .addCase( TelegramBotServices.deleteBots.rejected, (state, action) => {
+                console.log(action.payload);
+                state.error = action.payload || 'error'
+                state.isBotsDeleting = false;
+            })
+            .addCase( TelegramBotServices.getBots.pending, (state) => {
+                state.isBotsLoading = true;
+            })
+            .addCase( TelegramBotServices.getBots.fulfilled, (state, action) => {
+                console.log(action.payload);
+                state.bots = action.payload;
+                // ==========================================
+                state.bots.forEach(bot => bot.relatedTgGroups = []);
+                // ==========================================
+                state.error = '';
+                state.isBotsLoading = false;
+            })
+            .addCase( TelegramBotServices.getBots.rejected, (state, action) => {
+                console.log(action.payload);
+                state.error = action.payload || 'error'
+                state.isBotsLoading = false;
+            })
+    },
 })
 
-export const { setBots, addBot, delBotById, delBotsById, editBotPipeline, unlinkLead } = botSlice.actions;
+export const { setBots, addBot, delBotsByToken, editBotPipeline, unlinkLead } = botSlice.actions;
 
 export default botSlice.reducer;

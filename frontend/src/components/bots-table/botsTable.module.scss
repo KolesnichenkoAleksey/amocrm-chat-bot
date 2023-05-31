@@ -1,4 +1,6 @@
-.table {
+$table-header-height: 41px;
+
+.reon-amocrm-tg-chat-bot-table {
     width: 100%;
     text-align: left;
     position: relative;
@@ -7,8 +9,8 @@
         overflow: hidden;
         white-space: nowrap;
         th {
-            max-height: 56px;
-            height: 56px;
+            max-height: $table-header-height;
+            height: $table-header-height;
         }
     }
 
@@ -16,8 +18,10 @@
         border-bottom: 1px solid var(--table-border-color);
         max-width: 0;
         padding: 8px 10px;
+        vertical-align: middle;
         overflow-x: hidden;
         text-overflow: ellipsis;
+        white-space: nowrap;
 
         &_header {
             border-right: 1px solid var(--table-border-color);
@@ -30,7 +34,6 @@
         }
 
         &_checkbox {
-            border-right: 1px solid var(--table-border-color);
             width: 40px;
             max-width: 40px;
             padding: 10px;
@@ -62,7 +65,7 @@
     &__edit-menu {
         position: absolute;
         left: 41px;
-        height: 56px;
+        height: $table-header-height;
         top: 0;
         right: 0;
         display: flex;
@@ -83,7 +86,7 @@
     }
 }
 
-.edit-menu {
+.reon-amocrm-tg-chat-bot-edit-menu {
     &__delete-btn {
         display: flex;
         align-items: center;

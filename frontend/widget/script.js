@@ -22,7 +22,8 @@ define(['./index.js'], function (App) {
 			},
 			advancedSettings() {
 				const subdomain = system.subdomain;
-				App.default.advancedSettings(subdomain);
+				const accountId = AMOCRM.constant('account').id;
+				App.default.advancedSettings(subdomain, accountId);
 			},
 			onSave() {
 				return true;

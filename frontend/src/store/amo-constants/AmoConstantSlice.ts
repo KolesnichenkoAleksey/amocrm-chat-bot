@@ -6,6 +6,7 @@ import IPipeline from '../../types/Pipeline';
 const initState: IAmoConstants = {
     subdomain: '',
     pipelines: [],
+    accountId: 0,
 }
 
 
@@ -19,6 +20,9 @@ export const AmoConstantSlice = createSlice({
         setPipelines(state, action: PayloadAction<IPipeline[]>) {
             state.pipelines = action.payload
         },
+        setAccountId(state, action: PayloadAction<number>) {
+            state.accountId = action.payload
+        }
     },
     extraReducers(builder) {
         builder
@@ -28,6 +32,6 @@ export const AmoConstantSlice = createSlice({
     },
 })
 
-export const { setSubdomain, setPipelines } = AmoConstantSlice.actions;
+export const { setSubdomain, setPipelines, setAccountId } = AmoConstantSlice.actions;
 
 export default AmoConstantSlice.reducer;

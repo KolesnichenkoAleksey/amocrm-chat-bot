@@ -38,11 +38,6 @@
             "name": "settings.terms_of_use",
             "type": "text",
             "required": true
-        },
-        "access_for_users": {
-            "name": "settings.access_for_users",
-            "type": "text",
-            "required": true
         }
         }, 
     "advanced": 
