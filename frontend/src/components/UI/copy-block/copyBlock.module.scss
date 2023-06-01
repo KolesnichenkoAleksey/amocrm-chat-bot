@@ -42,13 +42,13 @@
         }
     }
 
-    &.reon-amocrm-tg-chat-bot-copy-block_hover:hover &__btn {
+    &._hover:hover &__btn {
         opacity: 1;
         visibility: visible;
         pointer-events: all;
     }
 
-    &.reon-amocrm-tg-chat-bot-copy-block_always &__btn {
+    &._always &__btn {
         opacity: 1;
         visibility: visible;
         pointer-events: all;
