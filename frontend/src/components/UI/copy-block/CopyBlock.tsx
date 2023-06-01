@@ -7,13 +7,13 @@ import { visibilityOptionsType } from '../../../types/VisibilityOptions';
 interface Props {
     children: string,
     clName?: string,
-    visibility: visibilityOptionsType,
+    visibility: visibilityOptionsType
 }
 
 function CopyBlock({children, clName, visibility}: Props) {
     return (
         <div 
-            className={classNames(cl['reon-amocrm-tg-chat-bot-copy-block'], cl['reon-amocrm-tg-chat-bot-copy-block' + visibility], clName)}
+            className={classNames(cl['reon-amocrm-tg-chat-bot-copy-block'], cl[visibility], clName)}
         >
             <div className={cl['reon-amocrm-tg-chat-bot-copy-block__content']}>
                 {children}

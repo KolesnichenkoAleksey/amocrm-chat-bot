@@ -2,7 +2,7 @@ import classNames from 'classnames';
 import React from 'react'
 import {createPortal} from 'react-dom';
 import { useAppSelector } from '../../hooks/useStore';
-import { getIsBotsDeleting } from '../../store/bots/BotSelector';
+import { getIsBotsLoading } from '../../store/bots/BotSelector';
 import ButtonPrime from '../UI/buttons/button-prime';
 import Spinner from '../UI/spinner/Spinner';
 import cl from './deleteBotModal.module.scss';
@@ -15,7 +15,7 @@ interface Props {
 }
 
 const DeleteBotModal = ({ closeModal, dataType, deleteBot, isActive }: Props): JSX.Element => {
-    const isBotsDeleting = useAppSelector(getIsBotsDeleting)
+    const {isDeletingBots} = useAppSelector(getIsBotsLoading)
 
     const handleDeleteBot = async () => {
         await deleteBot();
@@ -42,7 +42,7 @@ const DeleteBotModal = ({ closeModal, dataType, deleteBot, isActive }: Props): J
                 onClick={handleDeleteBot}
             >
                 {
-                    isBotsDeleting
+                    isDeletingBots
                     ? <Spinner/>
                     : 'Да, удалить'
                 }

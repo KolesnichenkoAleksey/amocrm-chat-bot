@@ -9,7 +9,7 @@ const TelegramBotServices = {
             const response = await $api.post('/addBot', {subdomain, botToken, pipelineId});
             return response.data.bot;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message);
+            return rejectWithValue(error.response.data.message || error.message);
         }
     }),
     deleteBots: createAsyncThunk<string, IDelBots, {rejectValue: string,}>('/deleteBot', async ({subdomain, botTokens}: IDelBots, {rejectWithValue}) => {
@@ -17,7 +17,7 @@ const TelegramBotServices = {
             const response = await $api.patch('/deleteBot', {subdomain, botTokens});
             return response.data.message;
         } catch (error: any) {
-            return rejectWithValue(error.response.data.message);
+            return rejectWithValue(error.response.data.message || error.message);
         }
     }),
     getBots: createAsyncThunk<IBot[], IGetBots, {rejectValue: string,}>('/getBot', async ({subdomain}: IGetBots, {rejectWithValue}) => {
@@ -28,8 +28,8 @@ const TelegramBotServices = {
                 }
             });
             return response.data;
-        } catch (error: any) {
-            return rejectWithValue(error.response.data.message);
+        } catch (error: any) {            
+            return rejectWithValue(error.response.data.message || error.message);
         }        
     }),
 }

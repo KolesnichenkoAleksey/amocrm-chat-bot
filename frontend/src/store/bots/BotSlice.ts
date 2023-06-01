@@ -6,17 +6,29 @@ import IPipeline from '../../types/Pipeline';
 
 interface BotState {
     bots: IBot[];
-    isBotsLoading: boolean,
-    isBotAdding: boolean,
-    isBotsDeleting: boolean,
-    error: string,
+    isLoading: {
+        isGettingBots: boolean,
+        isAddingBot: boolean,
+        isDeletingBots: boolean,
+    }
+    error: {
+        gettingBotsError: string,
+        addingBotError: string,
+        deletingBotsError: string,
+    },
 }
 
 const initState: BotState = {
-    isBotsLoading: false,
-    isBotAdding: false,
-    isBotsDeleting: false,
-    error: '',
+    isLoading: {
+        isAddingBot: false,
+        isDeletingBots: false, 
+        isGettingBots: false,
+    },
+    error: {
+        gettingBotsError: '',
+        addingBotError: '',
+        deletingBotsError: '',
+    },
     bots: [
         {
             _id: '2347jhfgd234',
@@ -185,7 +197,7 @@ export const botSlice = createSlice({
     extraReducers(builder) {
         builder
             .addCase( TelegramBotServices.addBot.pending, (state) => {
-                state.isBotAdding = true;
+                state.isLoading.isAddingBot = true;
             })
             .addCase( TelegramBotServices.addBot.fulfilled, (state, action) => {
                 console.log(action.payload); 
@@ -193,29 +205,29 @@ export const botSlice = createSlice({
                 action.payload.relatedTgGroups = [];             
                 // ==========================================
                 state.bots.push(action.payload);
-                state.error = '';
-                state.isBotAdding = false;
+                state.error.addingBotError = '';
+                state.isLoading.isAddingBot = false;
             })
             .addCase( TelegramBotServices.addBot.rejected, (state, action) => {
                 console.log(action.payload);
-                state.error = action.payload || 'error'
-                state.isBotAdding = false;
+                state.error.addingBotError = action.payload || 'error'
+                state.isLoading.isAddingBot = false;
             })
             .addCase( TelegramBotServices.deleteBots.pending, (state) => {
-                state.isBotsDeleting = true;
+                state.isLoading.isDeletingBots = true;
             })
             .addCase( TelegramBotServices.deleteBots.fulfilled, (state, action) => {
                 state.bots = state.bots.filter(bot => !action.payload.includes(bot._id));
-                state.error = '';
-                state.isBotsDeleting = false;
+                state.error.deletingBotsError = '';
+                state.isLoading.isDeletingBots = false;
             })
             .addCase( TelegramBotServices.deleteBots.rejected, (state, action) => {
                 console.log(action.payload);
-                state.error = action.payload || 'error'
-                state.isBotsDeleting = false;
+                state.error.deletingBotsError = action.payload || 'error'
+                state.isLoading.isDeletingBots = false;
             })
             .addCase( TelegramBotServices.getBots.pending, (state) => {
-                state.isBotsLoading = true;
+                state.isLoading.isGettingBots = true;
             })
             .addCase( TelegramBotServices.getBots.fulfilled, (state, action) => {
                 console.log(action.payload);
@@ -223,13 +235,13 @@ export const botSlice = createSlice({
                 // ==========================================
                 state.bots.forEach(bot => bot.relatedTgGroups = []);
                 // ==========================================
-                state.error = '';
-                state.isBotsLoading = false;
+                state.error.gettingBotsError = '';
+                state.isLoading.isGettingBots = false;
             })
             .addCase( TelegramBotServices.getBots.rejected, (state, action) => {
                 console.log(action.payload);
-                state.error = action.payload || 'error'
-                state.isBotsLoading = false;
+                state.error.gettingBotsError = action.payload || 'error'
+                state.isLoading.isGettingBots = false;
             })
     },
 })

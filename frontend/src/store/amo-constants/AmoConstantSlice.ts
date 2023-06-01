@@ -9,7 +9,6 @@ const initState: IAmoConstants = {
     accountId: 0,
 }
 
-
 export const AmoConstantSlice = createSlice({
     name: 'amoConstants',
     initialState: initState,

@@ -3,4 +3,4 @@ export enum visibilityOptions {
     _hover = '_hover'
 }
 
-export type visibilityOptionsType = keyof typeof visibilityOptions
+export type visibilityOptionsType = keyof typeof visibilityOptions;

@@ -17,7 +17,7 @@ interface Props {
 const WidgetAdvancedSettings = ({subdomain, accountId}: Props): JSX.Element => {
     const bots = useAppSelector(getBots);
     const dispatch = useAppDispatch();
-    const isBotsLoading = useAppSelector(getIsBotsLoading);
+    const {isGettingBots} = useAppSelector(getIsBotsLoading);
 
 	useEffect(() => {
         dispatch(AmoServices.getPipelines(subdomain));
@@ -31,7 +31,7 @@ const WidgetAdvancedSettings = ({subdomain, accountId}: Props): JSX.Element => {
             <div className={classNames(cl['reon-amocrm-tg-chat-bot-settings__block'], cl['reon-amocrm-tg-chat-bot-settings__block_table'])}>
                 <h2 className={cl['reon-amocrm-tg-chat-bot-block__title']}>Таблица ботов</h2>
                 {
-                    isBotsLoading 
+                    isGettingBots 
                     ? <div className={cl['reon-amocrm-tg-chat-bot-loading-table']}></div>
                     : <BotsTable bots={bots} />
                 }                

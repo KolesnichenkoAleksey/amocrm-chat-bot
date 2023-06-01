@@ -8,7 +8,7 @@ import cl from './botCreate.module.scss'
 import { getPipelines, getSubdomain } from './../../store/amo-constants/AmoConstantSelector';
 import TelegramBotServices from './../../api/services/telegram-bot/index';
 import { useAppDispatch } from './../../hooks/useStore';
-import { getBotError, getIsBotAdding } from './../../store/bots/BotSelector';
+import { getBotError, getIsBotsLoading } from './../../store/bots/BotSelector';
 import classNames from 'classnames';
 import Spinner from '../UI/spinner/Spinner'
 
@@ -18,8 +18,8 @@ const BotCreate = (): JSX.Element => {
     const [botApiKey, setBotApiKey] = useState('');
     const subdomain = useAppSelector(getSubdomain);
     const dispatch = useAppDispatch();
-    const error = useAppSelector(getBotError);
-    const isBotAdding = useAppSelector(getIsBotAdding);
+    const {addingBotError} = useAppSelector(getBotError);
+    const {isAddingBot} = useAppSelector(getIsBotsLoading);
 
     const changeOption = (value: number) => {
         const newPipeline = pipelines.find(pipe => pipe.id === value)
@@ -43,12 +43,12 @@ const BotCreate = (): JSX.Element => {
     return (
         <div className={cl['reon-amocrm-tg-chat-bot-bot-create']}>
             <div className={cl['reon-amocrm-tg-chat-bot-bot-create__table']}>
-                <div className={classNames(cl['reon-amocrm-tg-chat-bot-bot-create__input'], {[cl._error]: error})}>
+                <div className={classNames(cl['reon-amocrm-tg-chat-bot-bot-create__input'], {[cl._error]: addingBotError})}>
                     <InputPrime
                         type='text'
                         onChange={(e) => setBotApiKey(e.target.value)}
                         value={botApiKey}
-                        placeholder={error || 'Введите Token telegram бота'}
+                        placeholder={addingBotError || 'Введите Token telegram бота'}
                     />
                 </div>
                 <div className={cl['reon-amocrm-tg-chat-bot-bot-create__select']}>
@@ -68,7 +68,7 @@ const BotCreate = (): JSX.Element => {
                 onClick={handleCreateBot}
             >
                 {
-                    isBotAdding 
+                    isAddingBot 
                     ? <Spinner/>
                     : 'Добавить бота'
                 }
