@@ -77,7 +77,7 @@ const BotCardTable = ({bot, selectBot, isSelected}: Props): JSX.Element => {
                 >
                     <CopyBlock 
                         clName={cl['reon-amocrm-tg-chat-bot-bot-card__copy']}
-                        visibility='hover'
+                        visibility='_hover'
                     >
                         {bot.botToken}
                     </CopyBlock>

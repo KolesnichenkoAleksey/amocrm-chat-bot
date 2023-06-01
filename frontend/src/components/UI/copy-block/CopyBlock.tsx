@@ -2,17 +2,18 @@ import React from 'react'
 import classNames from 'classnames';
 import cl from './copyBlock.module.scss'
 import copyToClipboard from '../../../utils/copyToClipboard';
+import { visibilityOptionsType } from '../../../types/VisibilityOptions';
 
 interface Props {
     children: string,
     clName?: string,
-    visibility: 'always' | 'hover'
+    visibility: visibilityOptionsType,
 }
 
 function CopyBlock({children, clName, visibility}: Props) {
     return (
         <div 
-            className={classNames(cl['reon-amocrm-tg-chat-bot-copy-block'], cl['reon-amocrm-tg-chat-bot-copy-block_' + visibility], clName)}
+            className={classNames(cl['reon-amocrm-tg-chat-bot-copy-block'], cl['reon-amocrm-tg-chat-bot-copy-block' + visibility], clName)}
         >
             <div className={cl['reon-amocrm-tg-chat-bot-copy-block__content']}>
                 {children}
