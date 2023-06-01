@@ -5,7 +5,7 @@ import cl from './checkboxPrime.module.scss';
 interface Props {
     clName?: string,
     name: string,
-    value?: string,
+    value: string,
     onChange: (value: string) => void
     isActive: boolean
 }
@@ -14,13 +14,8 @@ const CheckboxPrime = ({ name, clName, value, onChange, isActive }: Props): JSX.
 
     const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
         e.stopPropagation();
-        const value = e.target.getAttribute('data-value') ? e.target.getAttribute('data-value') : undefined;
-        if (value) {
-            onChange(value);
-        }
-        else {
-            onChange('-1');
-        }
+        const dataValue = e.target.value;
+        onChange(dataValue);
     }
 
     return (
@@ -28,7 +23,7 @@ const CheckboxPrime = ({ name, clName, value, onChange, isActive }: Props): JSX.
             <input 
                 type="checkbox" 
                 name={name}
-                data-value={value}
+                value={value}
                 onChange={onChangeHandler} 
             />
         </label>

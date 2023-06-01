@@ -61,9 +61,6 @@ const BotsTable = ({bots}: Props): JSX.Element => {
     }
 
     const handleSelectBot = (token: string) => {
-        if (token === '-1') {
-            return;
-        }
         if (selectedBots.has(token)) {
             setSelectedBots(prev => {
                 const next = new Set(prev);
@@ -85,6 +82,7 @@ const BotsTable = ({bots}: Props): JSX.Element => {
                             clName={classNames({[cl['reon-amocrm-tg-chat-bot-table__checkbox_cancel']]: selectedBots.size && selectedBots.size !== bots.length})}
                             name={'reon-amocrm-tg-chat-bot-bots-checkbox'}
                             onChange={handleAllBotsSelection}
+                            value={'select-all'}
                         />
                     </th>
                     <th className={classNames(cl['reon-amocrm-tg-chat-bot-table__cell'], cl['reon-amocrm-tg-chat-bot-table__cell_header'])}>

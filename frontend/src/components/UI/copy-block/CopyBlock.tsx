@@ -12,7 +12,7 @@ interface Props {
 function CopyBlock({children, clName, visibility}: Props) {
     return (
         <div 
-            className={classNames(cl['reon-amocrm-tg-chat-bot-copy-block'], cl[visibility], clName)}
+            className={classNames(cl['reon-amocrm-tg-chat-bot-copy-block'], cl['reon-amocrm-tg-chat-bot-copy-block_' + visibility], clName)}
         >
             <div className={cl['reon-amocrm-tg-chat-bot-copy-block__content']}>
                 {children}
