@@ -21,7 +21,7 @@
         }
 
         &:first-child {
-            border-left: 2px solid transparent;
+            border-left: 3px solid transparent;
         }
         &:last-child {
             border-right-color: transparent;
@@ -108,7 +108,7 @@
 
     &._active {
         .reon-amocrm-tg-chat-bot-bot-card__cell:first-child {
-            border-left: 2px solid var(--table-border-color);
+            border-left: 3px solid var(--selected-bot-color);
         }
     }
 }
