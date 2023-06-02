@@ -6,8 +6,8 @@ import { StatusCodes } from '../consts/statusCodes';
 export default function(error: unknown, req: Request, res: Response, next: NextFunction) {
 
     if (error instanceof ApiError) {
-        return res.status(error.status).json({ message: error.message });
+        return res.status(error.status).json({ message: error.message, isError: true });
     }
 
-    return res.status(StatusCodes.Internal.Code).json({ message: 'Непредвиденная ошибка!' });
+    return res.status(StatusCodes.Internal.Code).json({ message: 'Непредвиденная ошибка!', isError: true });
 }

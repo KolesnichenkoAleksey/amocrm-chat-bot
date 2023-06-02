@@ -5,6 +5,7 @@ const LinkedDealsModel = new Schema<LinkedDealsInterface>({
     widgetUserId: {type: Number, require: true},
     linkedGroups: {
         type: Array({
+            telegramBotToken: {type: String, require: true},
             telegramGroupId: {type: Number, require: true},
             dealsIds: {type: [Number], require: true}
         }),

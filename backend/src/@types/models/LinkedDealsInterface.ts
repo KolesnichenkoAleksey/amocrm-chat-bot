@@ -1,4 +1,5 @@
-type LinkedGroups = {
+export type LinkedGroups = {
+    telegramBotToken: string,
     telegramGroupId: number,
     dealsIds: number[]
 }
