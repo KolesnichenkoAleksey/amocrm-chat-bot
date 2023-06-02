@@ -1,4 +1,4 @@
-.modal {
+.reon-amocrm-tg-chat-bot-modal {
     position: fixed;
     min-height: 100vh;
     padding: 30px;
@@ -24,17 +24,17 @@
     }
 }
 
-.title {
-    font-size: 22px;
-    margin-bottom: 30px;
-}
-
-.container {
+.reon-amocrm-tg-chat-bot-container {
     padding: 40px;
     padding-bottom: 20px;
     background-color: var(--bg-color);
     border-radius: 5px;
     overflow: auto;
+
+    &__title {
+        font-size: 22px;
+        margin-bottom: 30px;
+    }
 
     &__btns {
         display: flex;

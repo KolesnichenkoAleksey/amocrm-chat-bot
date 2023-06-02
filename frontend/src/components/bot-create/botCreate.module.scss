@@ -1,4 +1,4 @@
-.bot-create {
+.reon-amocrm-tg-chat-bot-bot-create {
 
     &__table {
         display: flex;
@@ -12,11 +12,14 @@
         padding: 10px;
         border: 1px solid var(--table-border-color);
         background-color: var(--bg-color);
+
+        &._error {
+            border-color: rgb(190, 54, 54);
+        }
     }
 
     &__input {
         color: var(--table-th-color);
-        border-right: 0;
         border-radius: 3px 0 0 3px;
 
         input {
@@ -26,6 +29,7 @@
 
     &__select {
         border-radius: 0 3px 3px 0;
+        border-left: 0;
         display: flex;
         align-items: center;
     }

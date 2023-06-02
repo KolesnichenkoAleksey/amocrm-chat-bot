@@ -1,10 +1,11 @@
-.checkbox {
+.reon-amocrm-tg-chat-bot-checkbox {
     display: block;
     outline: 0;
     cursor: pointer;
     background-color: var(--checkbox-color);
     border: 1px solid var(--table-border-color);
     height: 20px;
+    width: 20px;
     
     &._active {
         background: var(--checkbox-color) var(--icon-checkbox-checked-mark) no-repeat;

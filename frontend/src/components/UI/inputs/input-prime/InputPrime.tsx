@@ -13,7 +13,7 @@ interface Props {
 const InputPrime = ({ clName, placeholder, value, onChange, type }: Props): JSX.Element => {
 	return (
 		<input
-			className={classNames(clName, cl.input)}
+			className={classNames(clName, cl['reon-amocrm-tg-chat-bot-input'])}
 			placeholder={placeholder}
 			value={value}
 			onChange={onChange}

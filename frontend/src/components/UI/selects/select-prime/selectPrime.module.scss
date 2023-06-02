@@ -1,16 +1,26 @@
-.select {
+.reon-amocrm-tg-chat-bot-select {
     cursor: pointer;
     outline: 0;
-    padding: 9px 10px;
     color: inherit;
     position: relative;
+    display: flex;
+    align-items: center;
+    column-gap: 10px;
 
-    span {
-        display: block;
-        width: 100%;
+    &__text {
+        flex: 1 1 auto;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    &__arrow {
+        flex: 0 0 auto;
+        transform: rotateX(0deg);
+        transition-duration: .2s;
+    }
+    &._active &__arrow {
+        transform: rotateX(180deg);
     }
 
     &__wrapper {

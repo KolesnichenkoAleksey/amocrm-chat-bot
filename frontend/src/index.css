@@ -13,6 +13,7 @@
   --bot-card-bg-color: #f1f1f1;
   --main-text-color: #292929;
   --table-border-bottom-color: #dbdddf;
+  --selected-bot-color: #4c8bf7;
 }
 
 :root.theme-dark {
@@ -22,6 +23,7 @@
   --bot-card-bg-color: #183950;
   --main-text-color: #ced5d8;
   --table-border-bottom-color: transparent;
+  --selected-bot-color: #80a7c5;
 }
 
 * {

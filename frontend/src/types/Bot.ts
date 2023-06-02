@@ -2,9 +2,9 @@ import IPipeline from "./Pipeline";
 import ITgGroup from "./TgGroup";
 
 export default interface IBot {
-    _id: number,
-    name: string,
-    apiKey: string,
+    _id: string,
+    botName: string,
+    botToken: string,
     pipeline: IPipeline,
     relatedTgGroups: ITgGroup[]
 }

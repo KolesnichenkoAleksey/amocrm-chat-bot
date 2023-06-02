@@ -13,22 +13,48 @@ module.exports = {
     },
 
     module: {
-        rules: [   //загрузчик для jsx
+        rules: [
             {
                 test: /\.tsx?$/,
-                exclude: /(node_modules)/,  // исключаем из обработки папку node_modules
+                exclude: /(node_modules)/,
                 loader: 'babel-loader',
                 options: {
                     presets: ["@babel/preset-typescript", "@babel/preset-react"]
                 },
+                
             },
             {
                 test: /\.css$/,
-                use: ['style-loader', 'css-loader']
+                use: ['style-loader', 'css-loader'],
+                
             },
             {
-                test: /\.scss$/,
-                use: ['style-loader', 'css-loader', 'sass-loader']
+                test: /\.module\.css$/,
+                use: ['style-loader',
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            modules: {
+                                localIdentName: "[local]--[hash:base64:5]"
+                            }
+                        }
+                    }
+                ],
+                
+            },
+            {
+                test: /\.module\.scss$/,
+                use: ['style-loader', 
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            modules: {
+                                localIdentName: "[local]--[hash:base64:5]"
+                            }
+                        }
+                    }, 
+                    'sass-loader'
+                ],
             },
 
         ]

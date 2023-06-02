@@ -2,9 +2,20 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { store } from './store';
-import WidgetAdvancedSettings from './pages/widget-advanced-setings';
-import '../widget/modules/settingsREON/style-settings.css';
-import './index.css'
+import './index.css';
+import WidgetAdvancedSettings from './pages/widget-advanced-settings';
+
+const createReactRoot = (domElementId: string, rootComponent: JSX.Element) => {
+    const rootDOMElement: HTMLElement | null = document.getElementById(domElementId);
+    if (rootDOMElement) {
+        const modalRoot = ReactDOM.createRoot(rootDOMElement);
+        modalRoot.render(
+            <Provider store={store}>
+                {rootComponent}
+            </Provider>
+        );
+    }
+}
 
 const Wid = {
 
@@ -24,19 +35,8 @@ const Wid = {
         return true;
     },
 
-    advancedSettings(subdomain: string) {
-        const rootAdvancedWidgetSettings:HTMLElement | null = document.getElementById('list_page_holder');
-
-        if (rootAdvancedWidgetSettings) {
-            const rootAdvancedSettings = ReactDOM.createRoot(rootAdvancedWidgetSettings);
-            rootAdvancedSettings.render(
-                <Provider store={store}>
-                    <WidgetAdvancedSettings
-                        subdomain={subdomain}
-                    />
-                </Provider>
-            );
-        }
+    advancedSettings(subdomain: string, accountId: number) {
+        createReactRoot('list_page_holder', <WidgetAdvancedSettings subdomain={subdomain} accountId={accountId} />);
         return true;
     },
 

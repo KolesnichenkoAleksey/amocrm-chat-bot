@@ -1,0 +1,56 @@
+@keyframes scaleDown {
+    0% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(0.8);
+    }
+}
+
+.reon-amocrm-tg-chat-bot-copy-block {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    column-gap: 10px;
+
+    &__content{
+        flex: 1 1 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &__btn {
+        cursor: pointer;
+        flex: 0 0 16px;
+        width: 16px;
+        height: 16px;
+        transform: scale(1);
+        outline: 0;
+        border: 0;
+        background-color: transparent;
+        color: inherit;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+
+        &:focus {
+            animation: scaleDown .2s ease 1 alternate;
+        }
+        &:active {
+            animation: none;
+        }
+    }
+
+    &._hover:hover &__btn {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: all;
+    }
+
+    &._always &__btn {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: all;
+    }
+}

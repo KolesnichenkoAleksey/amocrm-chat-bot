@@ -12,7 +12,7 @@ interface Props {
 const ButtonPrime = ({ children, clName, style, onClick }: Props): JSX.Element => {
     return (
         <button
-            className={classNames(clName, cl.btn, cl[style])}
+            className={classNames(clName, cl['reon-amocrm-tg-chat-bot-btn'], cl[style])}
             onClick={onClick}
         >
             {children}
