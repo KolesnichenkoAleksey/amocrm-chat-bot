@@ -21,14 +21,14 @@ const BotCreate = (): JSX.Element => {
     const {addingBotError} = useAppSelector(getBotError);
     const {isAddingBot} = useAppSelector(getIsBotsLoading);
 
-    const changeOption = (value: number) => {
+    const changeOption = (value: number): void => {
         const newPipeline = pipelines.find(pipe => pipe.id === value)
         if (newPipeline) {
             setSelectedPipeline(newPipeline);
         }
     }
 
-    const handleCreateBot = async () => {
+    const handleCreateBot = async (): Promise<void> => {
         setBotApiKey('');
         dispatch(TelegramBotServices.addBot({subdomain, pipelineId: selectedPipeline.id, botToken: botApiKey}));
     }
