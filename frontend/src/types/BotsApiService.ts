@@ -12,3 +12,7 @@ export interface IDelBots {
 export interface IGetBots {
     subdomain: string,
 }
+
+export interface IRejectOptions {
+    rejectValue: string
+}

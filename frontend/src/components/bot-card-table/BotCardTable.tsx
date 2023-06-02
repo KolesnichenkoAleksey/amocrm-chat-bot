@@ -24,14 +24,14 @@ const BotCardTable = ({bot, selectBot, isSelected}: Props): JSX.Element => {
     const subdomain = useAppSelector(getSubdomain);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false)
 
-    const changeOption = (value: number) => {
+    const changeOption = (value: number): void => {
         const newPipeline = pipelines.find(pipe => pipe.id === value);
         if (newPipeline) {
             dispatch(editBotPipeline({botId: bot._id, pipeline: newPipeline}));
         }
     }
 
-    const handleUnlinkLead = (botId: string, tgGroupId: number, leadId: number) => {
+    const handleUnlinkLead = (botId: string, tgGroupId: number, leadId: number): void => {
         dispatch(unlinkLead({botId, tgGroupId, leadId}));
     }
 

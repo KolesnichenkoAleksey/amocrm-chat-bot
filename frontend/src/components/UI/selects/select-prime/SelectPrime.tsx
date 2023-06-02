@@ -15,17 +15,17 @@ const SelectPrime = ({ clName, name, onChange, selected, options, withArrow }: P
 
     const [isActive, setIsActive] = useState(false)
 
-    const toggleHandler = (e: React.MouseEvent) => {
+    const toggleHandler = (e: React.MouseEvent): void => {
         e.stopPropagation();
         setIsActive(prev => !prev);
     }
 
-    const closeHandler = (e: React.MouseEvent) => {
+    const closeHandler = (e: React.MouseEvent): void => {
         e.stopPropagation();
         setIsActive(false);
     }
     
-    const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>): void => {
         e.stopPropagation();
         onChange(Number(e.target.value));
     }

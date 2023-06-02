@@ -23,34 +23,35 @@ const DeleteBotModal = ({ closeModal, dataType, deleteBot, isActive }: Props): J
     }
 
     return createPortal(
-    <div 
-        className={classNames(cl['reon-amocrm-tg-chat-bot-modal'], {[cl._active] : isActive})} 
-        data-type={dataType} 
-        onClick={closeModal}
-    >
-        <div className={cl['reon-amocrm-tg-chat-bot-container']} onClick={e => e.stopPropagation()}>
-            <h2 className={cl['reon-amocrm-tg-chat-bot-container__title']}>Вы действительно хотите удалить выбранные элементы?</h2>
-            <div className={cl['reon-amocrm-tg-chat-bot-container__btns']}>
-            <ButtonPrime
-                style='add'
-                onClick={closeModal}
-            >
-                Нет, отмена
-            </ButtonPrime>
-            <ButtonPrime
-                style='delete'
-                onClick={handleDeleteBot}
-            >
-                {
-                    isDeletingBots
-                    ? <Spinner/>
-                    : 'Да, удалить'
-                }
-                
-            </ButtonPrime>
+        <div 
+            className={classNames(cl['reon-amocrm-tg-chat-bot-modal'], {[cl._active] : isActive})} 
+            data-type={dataType} 
+            onClick={closeModal}
+        >
+            <div className={cl['reon-amocrm-tg-chat-bot-container']} onClick={e => e.stopPropagation()}>
+                <h2 className={cl['reon-amocrm-tg-chat-bot-container__title']}>Вы действительно хотите удалить выбранные элементы?</h2>
+                <div className={cl['reon-amocrm-tg-chat-bot-container__btns']}>
+                <ButtonPrime
+                    style='add'
+                    onClick={closeModal}
+                >
+                    Нет, отмена
+                </ButtonPrime>
+                <ButtonPrime
+                    style='delete'
+                    onClick={handleDeleteBot}
+                >
+                    {
+                        isDeletingBots
+                        ? <Spinner/>
+                        : 'Да, удалить'
+                    }
+                    
+                </ButtonPrime>
+                </div>
             </div>
         </div>
-    </div>, document.body)
+    , document.body)
 }
 
 export default DeleteBotModal

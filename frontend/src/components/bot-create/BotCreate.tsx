@@ -35,7 +35,7 @@ const BotCreate = (): JSX.Element => {
 
     useEffect(() => {
         if (pipelines) {
-            const mainPipeline = pipelines.filter(pipe => pipe.is_main === true)[0]
+            const [mainPipeline] = pipelines.filter(pipe => pipe.is_main === true)
             setSelectedPipeline(mainPipeline)
         }        
     }, [pipelines])

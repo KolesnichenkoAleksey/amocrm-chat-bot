@@ -10,7 +10,7 @@ interface Props {
     visibility: visibilityOptionsType
 }
 
-function CopyBlock({children, clName, visibility}: Props) {
+const CopyBlock = ({children, clName, visibility}: Props) => {
     return (
         <div 
             className={classNames(cl['reon-amocrm-tg-chat-bot-copy-block'], cl[visibility], clName)}

@@ -27,23 +27,23 @@ const BotsTable = ({bots}: Props): JSX.Element => {
     const searchQuery = useSearchDebounce(searchValue);
     const searchedBots = useSearchBots(bots, searchQuery); 
 
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>): void => {
         const query = e.target.value;
         setSearchValue(query);
     }
 
-    const closeDeleteModal = () => {
+    const closeDeleteModal = (): void => {
         setIsDeleteModalActive(false);
         document.body.classList.remove('_scroll-lock');
         setSelectedBots(new Set<string>());
     }
 
-    const openDeleteBotModal = () => {
+    const openDeleteBotModal = (): void => {
         document.body.classList.add('_scroll-lock');
         setIsDeleteModalActive(true);
     }
 
-    const handleDeleteBots = async () => {
+    const handleDeleteBots = async (): Promise<void> => {
         if (selectedBots.size) {
             const botTokens = Array.from(selectedBots);
             setSelectedBots(new Set<string>());
@@ -52,7 +52,7 @@ const BotsTable = ({bots}: Props): JSX.Element => {
         }
     }
 
-    const handleAllBotsSelection = () => {
+    const handleAllBotsSelection = (): void => {
         if (!selectedBots.size) {
             setSelectedBots(new Set<string>(bots.map(bot => bot.botToken)));
         } else {
@@ -60,7 +60,7 @@ const BotsTable = ({bots}: Props): JSX.Element => {
         }
     }
 
-    const handleSelectBot = (token: string) => {
+    const handleSelectBot = (token: string): void => {
         if (selectedBots.has(token)) {
             setSelectedBots(prev => {
                 const next = new Set(prev);

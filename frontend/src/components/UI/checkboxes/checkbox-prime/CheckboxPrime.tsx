@@ -12,7 +12,7 @@ interface Props {
 
 const CheckboxPrime = ({ name, clName, value, onChange, isActive }: Props): JSX.Element => {
 
-    const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const onChangeHandler = (e: React.ChangeEvent<HTMLInputElement>): void => {
         e.stopPropagation();
         const dataValue = e.target.value;
         onChange(dataValue);
