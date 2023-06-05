@@ -1,4 +1,4 @@
-import mongoose, { Document, Error } from 'mongoose';
+import mongoose from 'mongoose';
 import { DataBaseConnectionOptions } from '../../@types/mongo/MongoConfig';
 import User from '../../models/userModel';
 import { getUserLogger, mainLogger } from '../logger/logger';
@@ -6,7 +6,7 @@ import { errorHandlingByType } from '../../error/errorHandlingByType';
 import { InitializingBot, UserInterface } from '../../@types/models/UserInterface';
 import LinkedDealsModel from '../../models/linkedDealsModel';
 import LinkedContactsModel from '../../models/linkedContactsModel';
-import { LinkedDealsInterface, LinkedGroups } from '../../@types/models/LinkedDealsInterface';
+import { LinkedDealsInterface } from '../../@types/models/LinkedDealsInterface';
 import { LinkedContactsInterface } from '../../@types/models/LinkedContactsInterface';
 
 class ManagerMongoDB {
@@ -72,14 +72,18 @@ class ManagerMongoDB {
                 }
             );
 
-            if (!(await this.getLinkedDealByAppUserId(userContent.accountId))) {
+            const userLinkedDeal = await this.getLinkedDealByAppUserId(userContent.accountId);
+
+            if (!userLinkedDeal) {
                 await LinkedDealsModel.insertMany({
                     widgetUserId: userContent.accountId,
                     linkedGroups: []
                 });
             }
 
-            if (!(await this.getLinkedContactsByAppUserId(userContent.accountId))) {
+            const userLinkedContact = await this.getLinkedContactsByAppUserId(userContent.accountId);
+
+            if (!userLinkedContact) {
                 await LinkedContactsModel.insertMany({
                     widgetUserId: userContent.accountId,
                     linkedContact: []
@@ -222,7 +226,9 @@ class ManagerMongoDB {
     async linkDeal(appUserId: number, dealId: number, groupId: number, botToken: string): Promise<void> {
         try {
 
-            if (!(await this.getLinkedDealByAppUserId(appUserId))) {
+            const userLinkedDeal = await this.getLinkedDealByAppUserId(appUserId);
+
+            if (!userLinkedDeal) {
                 await LinkedDealsModel.insertMany({
                     widgetUserId: appUserId,
                     linkedGroups: []

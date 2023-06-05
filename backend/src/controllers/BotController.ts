@@ -59,7 +59,9 @@ class BotController {
                 return next(ApiError.notFound('Не удалось получить пользователя виджета!'));
             }
 
-            if (appUser.initializingBots.find((botInfo: InitializingBot) => botInfo.botToken === botToken)) {
+            const isExistLinkedBot = !!appUser.initializingBots.find((botInfo: InitializingBot) => botInfo.botToken === botToken);
+
+            if (isExistLinkedBot) {
                 userLogger.debug(`Бот с токеном ${botToken} уже привязан к аккаунту клиента`);
                 return next(ApiError.notFound(`Бот с токеном ${botToken} уже привязан к аккаунту клиента`));
             }

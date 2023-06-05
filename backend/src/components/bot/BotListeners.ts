@@ -33,13 +33,15 @@ export class BotListeners {
 
         const messageText = ctx?.update?.message?.text;
 
+        const groupId = ctx?.update?.message?.from?.id === ctx?.update?.message?.chat?.id ? ctx?.update?.message?.from?.id : ctx?.update?.message?.chat?.id;
+
         const appUser = await mongoManager.getWidgetUserByBotToken(telegramToken);
 
         if (!appUser) {
             return ctx.reply('Бот не привязан к аккаунту');
         }
 
-        await amoChatAPI.sendMessage(appUser.amojoScopeId, userTelegramId, messageText);
+        await amoChatAPI.sendMessage(appUser.amojoScopeId, userTelegramId, groupId, messageText);
 
         return ctx.reply('Hello!');
     };

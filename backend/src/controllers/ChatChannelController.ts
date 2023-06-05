@@ -3,8 +3,6 @@ import { StatusCodes } from '../consts/statusCodes';
 import { ApiError } from '../error/ApiError';
 import { getUserLogger, mainLogger } from '../components/logger/logger';
 import { TypedRequestConnectChat } from '../@types/express-custom/RequestChat';
-import ClientApi from '../API/amoAPI';
-import amoChatAPI from '../API/amoChatAPI';
 import mongoManager from '../components/mongo/MongoManager';
 
 class ChatChannelController {

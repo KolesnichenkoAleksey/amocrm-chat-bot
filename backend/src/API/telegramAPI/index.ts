@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { mainLogger } from '../../components/logger/logger';
+import { GetMeResponse } from '../../@types/telegram-api/telegram-api.types';
 
 class TelegramAPI {
-    async getMe(botToken: string) {
+    async getMe(botToken: string): Promise<GetMeResponse | undefined> {
         try {
             const { data } = await axios.post(`https://api.telegram.org/bot${botToken}/getMe`, {});
             return data.result;

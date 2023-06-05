@@ -2,8 +2,7 @@ import dotenv from 'dotenv';
 import path from 'node:path';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import axiosRetry from 'axios-retry';
-import { getUserLogger, mainLogger } from '../../components/logger/logger';
-import { AccountSettings } from '../../@types/amo/accountSettings/accountSettings';
+import { getUserLogger } from '../../components/logger/logger';
 import {
     AmoAccount,
     AmoBodyError,
@@ -54,7 +53,7 @@ class ClientApi extends Api {
         this.unAuthStatus = StatusCodes.Unauthorized.DefaultMessage;
     }
 
-    private getRequestTokenData = (typeRequest: string) => {
+    private getRequestTokenData(typeRequest: string) {
         const requestTokenData = {
             client_id: CLIENT_ID,
             client_secret: CLIENT_SECRET,
@@ -73,7 +72,7 @@ class ClientApi extends Api {
         };
     };
 
-    requestAccessToken = async <SuccessTokenResponse>(): Promise<SuccessTokenResponse | void> => {
+    async requestAccessToken<SuccessTokenResponse>(): Promise<SuccessTokenResponse | void> {
         return axios
             .post(
                 `${this.ROOT_URL}/oauth2/access_token`,
@@ -91,7 +90,7 @@ class ClientApi extends Api {
             });
     };
 
-    getAccessToken = async () => {
+    async getAccessToken() {
         if (this.ACCESS_TOKEN) {
             return Promise.resolve(this.ACCESS_TOKEN);
         }
@@ -176,7 +175,7 @@ class ClientApi extends Api {
         }
     };
 
-    refreshToken = async () => {
+    async refreshToken() {
         try {
             const response = await axios.post<SuccessTokenResponse>(
                 `${this.ROOT_URL}/oauth2/access_token`,
@@ -211,9 +210,9 @@ class ClientApi extends Api {
         }
     };
 
-    authChecker = <T extends unknown[], D>(
+    authChecker<T extends unknown[], D>(
         request: (...args: T) => Promise<D>
-    ) => {
+    ) {
         return async (...args: T): Promise<D> => {
             if (!this.ACCESS_TOKEN) {
                 return this.getAccessToken().then(() =>
@@ -251,7 +250,7 @@ class ClientApi extends Api {
         };
     };
 
-    getAccountData = this.authChecker(async () => {
+    getAccountData: () => Promise<AmoAccount> = this.authChecker(async () => {
         const res = await axios.get<AmoAccount>(
             `${this.ROOT_URL}/api/v4/account?with=amojo_id`,
             {
@@ -261,19 +260,6 @@ class ClientApi extends Api {
             }
         );
         return res.data;
-    });
-
-    getAccountDataWithAmoJo = this.authChecker(() => {
-        return axios.get<AmoAccount>(`${this.ROOT_URL}/api/v4/account?with=amojo_id`, {
-            headers: {
-                Authorization: `Bearer ${this.ACCESS_TOKEN}`
-            }
-        })
-            .then((res) => res.data)
-            .catch((err) => {
-                this.logger.error('Не удалось получить информацию об аккаунте!');
-                this.logger.error(err.response.data);
-            });
     });
 }
 

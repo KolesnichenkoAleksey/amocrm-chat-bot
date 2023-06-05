@@ -7,16 +7,13 @@ export abstract class Api {
     abstract AUTH_CODE: string | undefined;
     abstract ACCOUNT_ID: number | undefined;
 
-    abstract requestAccessToken: <T, D = unknown>() => Promise<T | D | void>;
+    abstract requestAccessToken(): Promise<SuccessTokenResponse | void>;
 
-    abstract getAccessToken: () => Promise<string>;
+    abstract getAccessToken(): Promise<string>;
 
-    abstract refreshToken: () => Promise<void>;
+    abstract refreshToken(): Promise<void>;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    protected abstract authChecker: <T extends any[], D>(
-        request: (...args: T) => Promise<D>
-    ) => (...args: T) => Promise<D>;
+    protected abstract authChecker<T extends unknown[], D>(request: (...args: T) => Promise<D>): (...args: T) => Promise<D>;
 }
 
 export interface IParamsClientApi {
