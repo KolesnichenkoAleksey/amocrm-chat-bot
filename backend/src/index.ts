@@ -20,7 +20,7 @@ const MONGO_URI = process.env.MONGO_CONNECTION || 'mongodb://localhost:27017/amo
 
 const app = express();
 
-app.use(cors());
+app.use(cors({}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

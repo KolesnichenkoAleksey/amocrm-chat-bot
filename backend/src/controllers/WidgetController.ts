@@ -2,83 +2,48 @@ import { Response, NextFunction } from 'express';
 import { StatusCodes } from '../consts/statusCodes';
 import { ApiError } from '../error/ApiError';
 import { getUserLogger, mainLogger } from '../components/logger/logger';
-import Api from '../API/amoAPI';
 import mongoManager from '../components/mongo/MongoManager';
 import { UserInterface } from '../@types/models/UserInterface';
-import dayjs from 'dayjs';
-import path from 'node:path';
-import fs from 'node:fs';
 import { customRequest } from '../API/basicMethodsAPI';
 import {
     TypedRequestDeleteWidget,
     TypedRequestInstallWidget,
     TypedRequestStatus
 } from '../@types/express-custom/RequestWidget';
-
+import ClientApi from '../API/amoAPI';
+import amoChatAPI from '../API/amoChatAPI';
 
 class WidgetController {
     async installWidget(req: TypedRequestInstallWidget, res: Response, next: NextFunction) {
         try {
             const authCode = req.query.code || undefined;
             const subDomain = req.query.referer.split('.')[0] || undefined;
+            const clientId = req.query.client_id;
 
-            if (!authCode || !subDomain) {
+            if (!authCode || !subDomain || !clientId) {
                 mainLogger.debug('Не были переданы authCode или subDomain');
                 return next(ApiError.badRequest('Не были переданы authCode или subDomain'));
             }
 
             const userLogger = getUserLogger(subDomain);
-            const userApi = new Api(subDomain, authCode);
 
-            await userApi
+            const api = new ClientApi({ subDomain, authCode });
+            await api
                 .getAccessToken()
                 .then(() => {
-                    userLogger.debug(`Авторизация ${subDomain} прошла успешно`);
+                    userLogger.debug(
+                        `Authorization when installing widget for ${subDomain} was successful`
+                    );
                 })
-                .catch((err) => {
-                    userLogger.debug(`Произошла ошибка авторизации ${subDomain}`, err);
-                });
-
-            const existAppUser: UserInterface | null = await mongoManager.getWidgetUserBySubdomain(subDomain);
-
-            if (!existAppUser) {
-
-                const appUserAccountData = await userApi.getAccountData();
-
-                if (!appUserAccountData) {
-                    userLogger.debug('Неверный логин или пароль!');
-                    return next(ApiError.unauthorized('Неверный логин или пароль!'));
-                }
-
-                const todayDate = dayjs();
-
-                const newAppUser: UserInterface = {
-                    widgetUserSubdomain: subDomain,
-                    accountId: appUserAccountData.id,
-                    authCode,
-                    paid: false,
-                    installed: true,
-                    testPeriod: true,
-                    startUsingDate: todayDate.format('DD.MM.YYYY'),
-                    finishUsingDate: todayDate.add(15, 'days').format('DD.MM.YYYY'),
-                    initializingBots: []
-                };
-
-                await mongoManager.insertUser(newAppUser);
-
-            } else {
-
-                const updatedAppUser: UserInterface = {
-                    ...existAppUser,
-                    authCode,
-                    installed: true
-                };
-
-                await mongoManager.updateUser(updatedAppUser);
-
-            }
-
-            userLogger.debug(`Виджет был успешно установлен!`);
+                .catch((error) => {
+                        userLogger.debug(
+                            'Authorization error when installing widget',
+                            subDomain,
+                            error
+                        );
+                        next(ApiError.internal(error));
+                    }
+                );
 
             return res.status(StatusCodes.Ok.Code).json({ message: 'Установка виджета прошла успешно!' });
 
@@ -115,16 +80,18 @@ class WidgetController {
 
             const userLogger = getUserLogger(existAppUser.widgetUserSubdomain);
 
-            const AMO_TOKEN_PATH = path.resolve(__dirname, '..', 'authclients', `${existAppUser.widgetUserSubdomain}_amo_token.json`);
-
-            fs.unlinkSync(AMO_TOKEN_PATH);
-
             const updatedAppUser: UserInterface = {
                 ...existAppUser,
+                amojoId: '',
+                amojoScopeId: '',
+                access_token: '',
+                refresh_token: '',
                 installed: false
             };
 
             await mongoManager.updateUser(updatedAppUser);
+
+            await amoChatAPI.disconnect(existAppUser.amojoId);
 
             await customRequest(`https://vds2151841.my-ihor.ru/del`, { params: req.query }, 'Был успешно удалён аккаунт!', 'Возникли проблемы с редиректом!');
 
