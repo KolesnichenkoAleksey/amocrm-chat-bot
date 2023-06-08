@@ -33,17 +33,30 @@ function createSendMessageBody(groupId: number, userId: number, text: string): C
             'msgid': `reon-${uuidv4()}`,
             'conversation_id': `reon-${utils.hashFunction(String(groupId))}`,
             'sender': {
-                'id': `reon-${utils.hashFunction(String(userId))}`,
-                'avatar': 'https://example.com/users/avatar.png',
-                'profile': {},
-                'profile_link': 'https://example.com/profile/example.client',
-                'name': 'test'
+                'id': `reon-${utils.hashFunction(String(userId) + String(groupId))}`
             },
             'message': {
                 'type': 'text',
                 'text': text
             },
             'silent': false
+        }
+    };
+}
+
+function createChatBody(groupId: number, userId: number) {
+
+    return {
+        'conversation_id': `reon-${utils.hashFunction(String(groupId))}`,
+        'user': {
+            'id': `reon-${utils.hashFunction(String(userId))}`,
+            'avatar': 'https://example.com/users/avatar.png',
+            'name': 'Example Client',
+            'profile': {
+                'phone': '79151112233',
+                'email': 'example.client@example.com'
+            },
+            'profile_link': 'https://example.com/profile/example.client'
         }
     };
 }
@@ -127,6 +140,21 @@ class AmoChatAPI {
                 { ...sendMessageBody },
                 { headers: this.getHeaders('post', `/v2/origin/custom/${scopeId}`, sendMessageBody) }
             );
+        } catch (error: unknown) {
+            errorHandlingByType(error);
+        }
+    }
+
+    async createChat(scopeId: string, userId: number, groupId: number, text: string): Promise<void> {
+        try {
+            const sendMessageBody = createChatBody(userId, groupId);
+
+            console.log(await axios.post(
+                `${this.REQ_URL}/v2/origin/custom/${scopeId}/chats`,
+                { ...sendMessageBody },
+                { headers: this.getHeaders('post', `/v2/origin/custom/${scopeId}/chats`, sendMessageBody) }
+            ));
+
         } catch (error: unknown) {
             errorHandlingByType(error);
         }

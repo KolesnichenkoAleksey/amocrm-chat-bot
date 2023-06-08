@@ -8,10 +8,10 @@ import telegramAPI from '../API/telegramAPI';
 import mongoManager from '../components/mongo/MongoManager';
 import { InitializingBot, UserInterface } from '../@types/models/UserInterface';
 import {
-    TypedRequestAddBot,
+    TypedRequestAddBot, TypedRequestChangePipeline,
     TypedRequestDeleteBot,
-    TypedRequestGetAllBot, TypedRequestGetAllLinkedGroups,
-    TypedRequestGetByAccountBot
+    TypedRequestGetAllBot, TypedRequestGetAllBotByAccountId, TypedRequestGetAllLinkedGroups,
+    TypedRequestGetByAccountBot, TypedRequestUnlinkDeal
 } from '../@types/express-custom/RequestBot';
 
 class BotController {
@@ -214,6 +214,126 @@ class BotController {
             const userLogger = getUserLogger(subdomain);
 
             // ещё идёт работа
+
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                mainLogger.debug(error.message);
+                next(ApiError.internal(error.message));
+            }
+
+            if (typeof error === 'string') {
+                mainLogger.debug(error);
+                next(ApiError.internal(error));
+            }
+        }
+    }
+
+    async getAllBotsByAccountId(req: TypedRequestGetAllBotByAccountId, res: Response, next: NextFunction) {
+        try {
+            const accountId = req.query.accountId || undefined;
+
+            if (!accountId) {
+                mainLogger.debug('Не был передан accountId!');
+                return next(ApiError.badRequest('Не был передан SubDomain!'));
+            }
+
+            // const userLogger = getUserLogger(accountId);
+
+            const initializingBots = await mongoManager.getAllBotsByAccountId(accountId);
+
+            if (!initializingBots) {
+                // userLogger.debug(`У пользователя ${subdomain} нету ботов!`);
+                return next(ApiError.notFound(`У пользователя ${accountId} нету ботов!`));
+            }
+
+            const bots = [];
+
+            for (const bot of initializingBots) {
+                const relatedTgGroups = await mongoManager.getBotTgGroups(accountId, bot.botToken);
+                bots.push({
+                    ...bot,
+                    relatedTgGroups
+                });
+            }
+
+            return res.status(StatusCodes.Ok.Code).json(bots);
+
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                mainLogger.debug(error.message);
+                next(ApiError.internal(error.message));
+            }
+
+            if (typeof error === 'string') {
+                mainLogger.debug(error);
+                next(ApiError.internal(error));
+            }
+        }
+    }
+
+    async changePipeline(req: TypedRequestChangePipeline, res: Response, next: NextFunction) {
+        try {
+            const { accountId, botToken, pipeline } = req.body;
+
+            if (!accountId) {
+                mainLogger.debug('Не был передан accountId!');
+                return next(ApiError.badRequest('Не был передан accountId!'));
+            }
+
+            if (!botToken) {
+                mainLogger.debug('Не был передан botToken!');
+                return next(ApiError.badRequest('Не был передан botToken!'));
+            }
+
+            if (!pipeline) {
+                mainLogger.debug('Не был передан pipeline!');
+                return next(ApiError.badRequest('Не был передан pipeline!'));
+            }
+
+            await mongoManager.changePipeline(accountId, botToken, pipeline);
+
+            return res.status(StatusCodes.Ok.Code).json({ message: 'Изменение воронки прошло успешно' });
+
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                mainLogger.debug(error.message);
+                next(ApiError.internal(error.message));
+            }
+
+            if (typeof error === 'string') {
+                mainLogger.debug(error);
+                next(ApiError.internal(error));
+            }
+        }
+    }
+
+    async unlinkDeal(req: TypedRequestUnlinkDeal, res: Response, next: NextFunction) {
+        try {
+            const { accountId, botToken, dealId, groupId } = req.body;
+
+            if (!accountId) {
+                mainLogger.debug('Не был передан accountId!');
+                return next(ApiError.badRequest('Не был передан accountId!'));
+            }
+
+            if (!botToken) {
+                mainLogger.debug('Не был передан botToken!');
+                return next(ApiError.badRequest('Не был передан botToken!'));
+            }
+
+            if (!dealId) {
+                mainLogger.debug('Не был передан pipeline!');
+                return next(ApiError.badRequest('Не был передан pipeline!'));
+            }
+
+            if (!groupId) {
+                mainLogger.debug('Не был передан pipeline!');
+                return next(ApiError.badRequest('Не был передан pipeline!'));
+            }
+
+            await mongoManager.unlinkDeal(accountId, botToken, groupId, dealId);
+
+            return res.status(StatusCodes.Ok.Code).json({ message: 'Сделка успешно отвязана' });
 
         } catch (error: unknown) {
             if (error instanceof Error) {

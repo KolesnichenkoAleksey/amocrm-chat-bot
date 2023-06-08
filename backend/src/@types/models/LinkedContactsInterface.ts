@@ -1,7 +1,7 @@
-type LinkedContact = {
+export type LinkedContact = {
     amoCRMContactId: number,
     telegramUserId: number,
-    telegramName: string
+    telegramName: string,
 }
 
 export interface LinkedContactsInterface {

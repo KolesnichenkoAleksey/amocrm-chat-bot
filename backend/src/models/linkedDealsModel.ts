@@ -7,7 +7,14 @@ const LinkedDealsModel = new Schema<LinkedDealsInterface>({
         type: Array({
             telegramBotToken: {type: String, require: true},
             telegramGroupId: {type: Number, require: true},
-            dealsIds: {type: [Number], require: true}
+            telegramGroupName: {type: String, require: true},
+            deals: [{
+                type: Object({
+                    id: {type: Number, require: true},
+                    name: {type: String, require: true}
+                }),
+                require: true
+            }]
         }),
         require: true
     },

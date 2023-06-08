@@ -6,8 +6,8 @@ import { getUserLogger } from '../../components/logger/logger';
 import {
     AmoAccount,
     AmoBodyError,
-    Api,
-    IParamsClientApi,
+    Api, CreatedContact, CreatedContactResponse,
+    IParamsClientApi, LeadData,
     SuccessTokenResponse
 } from '../../@types/amo/api/amo-api.types';
 import { StatusCodes } from '../../consts/statusCodes';
@@ -259,6 +259,39 @@ class ClientApi extends Api {
                 }
             }
         );
+        return res.data;
+    });
+
+    getDeal: (dealId: number) => Promise<LeadData> = this.authChecker(async (dealId: number) => {
+        const res = await axios.get(`${this.ROOT_URL}/api/v4/leads/${dealId}`, {
+            headers: {
+                Authorization: `Bearer ${this.ACCESS_TOKEN}`
+            }
+        });
+        return res.data;
+    });
+
+    addContact: (contacts: CreatedContact[]) => Promise<CreatedContactResponse> = this.authChecker(async (contacts: CreatedContact[]) => {
+        const res = await axios.post(`${this.ROOT_URL}/api/v4/contacts`, {
+            ...contacts
+        }, {
+            headers: {
+                Authorization: `Bearer ${this.ACCESS_TOKEN}`
+            }
+        });
+
+        return res.data;
+    });
+
+    addDeal: (deals: LeadData[]) => Promise<any> = this.authChecker(async (deals: LeadData[]) => {
+        const res = await axios.post(`${this.ROOT_URL}/api/v4/leads`, {
+            ...deals
+        }, {
+            headers: {
+                Authorization: `Bearer ${this.ACCESS_TOKEN}`
+            }
+        });
+
         return res.data;
     });
 }

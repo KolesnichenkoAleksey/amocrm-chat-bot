@@ -3,11 +3,12 @@ import { DataBaseConnectionOptions } from '../../@types/mongo/MongoConfig';
 import User from '../../models/userModel';
 import { getUserLogger, mainLogger } from '../logger/logger';
 import { errorHandlingByType } from '../../error/errorHandlingByType';
-import { InitializingBot, UserInterface } from '../../@types/models/UserInterface';
+import { InitializingBot, PipelineInterface, UserInterface } from '../../@types/models/UserInterface';
 import LinkedDealsModel from '../../models/linkedDealsModel';
 import LinkedContactsModel from '../../models/linkedContactsModel';
-import { LinkedDealsInterface } from '../../@types/models/LinkedDealsInterface';
-import { LinkedContactsInterface } from '../../@types/models/LinkedContactsInterface';
+import { DealInterface, LinkedDealsInterface, LinkedGroups } from '../../@types/models/LinkedDealsInterface';
+import { LinkedContact, LinkedContactsInterface } from '../../@types/models/LinkedContactsInterface';
+import linkedDealsModel from '../../models/linkedDealsModel';
 
 class ManagerMongoDB {
     async connect(UriConnection: string, ConnectionOptions: DataBaseConnectionOptions) {
@@ -223,12 +224,89 @@ class ManagerMongoDB {
         return null;
     }
 
-    async linkDeal(appUserId: number, dealId: number, groupId: number, botToken: string): Promise<void> {
+    async getAllBotsByAccountId(accountId: number): Promise<InitializingBot[] | null> {
+        if (!accountId) {
+            return null;
+        }
+
+        // const logger = getUserLogger(subdomain);
+
+        try {
+            const [{ initializingBots = null } = {}] = await User.find({ accountId }, {
+                initializingBots: 1,
+                _id: 0
+            }).lean() || null;
+
+            return initializingBots || null;
+        } catch (error: unknown) {
+            // logger.debug(`Пользователь с accountId ${accountId} не был найден!`);
+            errorHandlingByType(error);
+        }
+
+        return null;
+    }
+
+    async changePipeline(accountId: number, botToken: string, pipeline: PipelineInterface): Promise<void> {
+        try {
+            await User.updateOne(
+                { accountId },
+                {
+                    $set: { ['initializingBots.$[bot].pipeline']: pipeline }
+                },
+                {
+                    arrayFilters: [{ 'bot.botToken': botToken }]
+                }
+            );
+
+        } catch (error) {
+            mainLogger.debug(`Произошла ошибка изменения воронки`);
+            errorHandlingByType(error);
+        }
+    }
+
+    async getBotTgGroups(accountId: number, botToken: string): Promise<LinkedGroups[]> {
+        try {
+            const linkedDeals: LinkedDealsInterface | null = await LinkedDealsModel.findOne({
+                widgetUserId: accountId,
+                'linkedGroups.telegramBotToken': botToken
+            }, { widgetUserId: 0, _id: 0, 'linkedGroups.telegramBotToken': 0 }).lean();
+            const relatedTgGroups = linkedDeals?.linkedGroups || [];
+            return [...relatedTgGroups];
+        } catch (error) {
+            mainLogger.debug(`Произошла ошибка получения групп связанных с ботом`);
+            errorHandlingByType(error);
+            return [];
+        }
+    }
+
+    async unlinkDeal(accountId: number, botToken: string, groupId: number, dealId: number): Promise<void> {
+        try {
+            await linkedDealsModel.updateOne(
+                { widgetUserId: accountId, 'linkedGroups.telegramBotToken': botToken },
+                {
+                    $pull: {
+                        'linkedGroups.$[group].deals': { id: dealId }
+                    }
+                },
+                {
+                    arrayFilters: [
+                        { 'group.telegramGroupId': groupId },
+                        { 'deal.id': dealId }
+                    ]
+                }
+            );
+        } catch (error) {
+            mainLogger.debug(`Произошла ошибка отвязывания сделки`);
+            errorHandlingByType(error);
+        }
+    }
+
+    async linkDeal(appUserId: number, deal: DealInterface, groupId: number, groupName: string, botToken: string): Promise<void> {
         try {
 
-            const userLinkedDeal = await this.getLinkedDealByAppUserId(appUserId);
+            const linkedDeal = await this.getLinkedDealByAppUserId(appUserId);
 
-            if (!userLinkedDeal) {
+            if (!linkedDeal) {
                 await LinkedDealsModel.insertMany({
                     widgetUserId: appUserId,
                     linkedGroups: []
@@ -238,11 +316,12 @@ class ManagerMongoDB {
             const linkedDeals: LinkedDealsInterface | null = await this.getLinkedDealByAppUserId(appUserId) || null;
 
             const linkedGroups = linkedDeals?.linkedGroups.map((group) => {
-                if (group.telegramGroupId === groupId && !group.dealsIds.includes(Number(dealId))) {
+                if (group.telegramGroupId === groupId && !group.deals.some(lead => lead.id === deal.id)) {
                     return {
                         telegramBotToken: botToken,
-                        telegramGroupId: group.telegramGroupId,
-                        dealsIds: [...group.dealsIds, dealId]
+                        telegramGroupId: groupId,
+                        telegramGroupName: groupName,
+                        deals: [...group.deals, deal]
                     };
                 }
                 return group;
@@ -254,7 +333,8 @@ class ManagerMongoDB {
                         linkedGroups: linkedGroups.find((group) => group.telegramGroupId === groupId) ? linkedGroups : [...linkedGroups, {
                             telegramBotToken: botToken,
                             telegramGroupId: groupId,
-                            dealsIds: [dealId]
+                            telegramGroupName: groupName,
+                            deals: [deal]
                         }]
                     }
                 });
@@ -264,7 +344,8 @@ class ManagerMongoDB {
                         linkedGroups: [...linkedGroups, {
                             telegramBotToken: botToken,
                             telegramGroupId: groupId,
-                            dealsIds: [dealId]
+                            telegramGroupName: groupName,
+                            deals: [deal]
                         }]
                     }
                 });
@@ -272,6 +353,54 @@ class ManagerMongoDB {
 
         } catch (error: unknown) {
             mainLogger.debug(`Произошла ошибка во привязки сделки к группе!`);
+            errorHandlingByType(error);
+        }
+    }
+
+    async getLinkedDealByTelegramId(telegramId: number): Promise<LinkedGroups | null | void> {
+        try {
+            const linkedDeal: LinkedDealsInterface | null = await LinkedDealsModel.findOne({ 'linkedGroups.telegramGroupId': telegramId });
+
+            if (linkedDeal) {
+                return linkedDeal.linkedGroups.find((linkedGroup) => linkedGroup.telegramGroupId === telegramId);
+            }
+
+        } catch (error: unknown) {
+            mainLogger.debug(`Произошла ошибка во время поиска связанных сделок!`);
+            errorHandlingByType(error);
+        }
+        return null;
+    }
+
+    async getContactByTelegramId(telegramId: number): Promise<LinkedContact | null> {
+        try {
+            const contact: LinkedContact | null = await LinkedContactsModel.findOne({ 'linkedContact.telegramUserId': telegramId });
+            if (contact) {
+                return contact;
+            }
+        } catch (error: unknown) {
+            mainLogger.debug(`Произошла ошибка во привязки сделки к группе!`);
+            errorHandlingByType(error);
+        }
+        return null;
+    }
+
+    async linkContact(appUserId: number, amoCRMContactId: number, telegramUserId: number, telegramName: string): Promise<void> {
+        try {
+            const linkedContacts = await this.getLinkedContactsByAppUserId(appUserId);
+
+            const linkedContact = {
+                amoCRMContactId,
+                telegramUserId,
+                telegramName
+            };
+            await LinkedContactsModel.updateOne({ widgetUserId: appUserId }, {
+                $set: {
+                    linkedContact: [...linkedContacts?.linkedContact || [], linkedContact]
+                }
+            });
+        } catch (error: unknown) {
+            mainLogger.debug(`Произошла ошибка во привязки контакта!`);
             errorHandlingByType(error);
         }
     }

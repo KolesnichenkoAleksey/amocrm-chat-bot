@@ -7,7 +7,7 @@ const LinkedContactsModel = new Schema<LinkedContactsInterface>({
         type: Array({
             amoCRMContactId: {type: Number, require: true},
             telegramUserId: {type: Number, require: true},
-            telegramName: {type: String, require: true}
+            telegramName: {type: String, require: true},
         }),
         require: true
     },

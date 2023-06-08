@@ -26,10 +26,10 @@ export type ChatApiDisconnectBody = {
 
 type SendMessagePayloadSender = {
     'id': string,
-    'avatar': string,
-    'profile': object,
-    'profile_link': string,
-    'name': string
+    'avatar'?: string,
+    'profile'?: object,
+    'profile_link'?: string,
+    'name'?: string
 }
 
 type SendMessagePayloadMessage = {

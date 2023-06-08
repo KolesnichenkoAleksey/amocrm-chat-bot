@@ -1,7 +1,13 @@
+export interface DealInterface {
+    name: string,
+    id: number
+}
+
 export type LinkedGroups = {
     telegramBotToken: string,
     telegramGroupId: number,
-    dealsIds: number[]
+    deals: DealInterface[]
+    telegramGroupName: string,
 }
 
 export interface LinkedDealsInterface {
