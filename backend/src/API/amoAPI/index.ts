@@ -8,6 +8,7 @@ import {
     AmoBodyError,
     Api,
     IParamsClientApi,
+    LeadData,
     SuccessTokenResponse
 } from '../../@types/amo/api/amo-api.types';
 import { StatusCodes } from '../../consts/statusCodes';
@@ -18,6 +19,7 @@ import dayjs from 'dayjs';
 import { Logger } from 'log4js';
 import amoChatAPI from '../amoChatAPI';
 import { v4 as uuidv4 } from 'uuid';
+import { errorHandlingByType } from '../../error/errorHandlingByType';
 
 
 dotenv.config({
@@ -97,7 +99,7 @@ class ClientApi extends Api {
             return Promise.resolve(this.ACCESS_TOKEN);
         }
         try {
-            let account = null;
+            let account;
             if (this.ACCOUNT_ID) {
                 this.logger.debug(`Try to get token by account id`);
                 account = await mongoManager.getWidgetUserByAccountId(this.ACCOUNT_ID);
@@ -108,7 +110,7 @@ class ClientApi extends Api {
                 );
             }
             if (!account) {
-                throw new Error('Account not found');
+                errorHandlingByType(new Error('Account not found'));
             }
             if (account.access_token && account.refresh_token) {
                 this.logger.debug(`Received tokens`);
@@ -116,7 +118,7 @@ class ClientApi extends Api {
                 this.REFRESH_TOKEN = account.refresh_token;
                 return Promise.resolve(this.ACCESS_TOKEN);
             } else {
-                throw new Error('no tokens');
+                errorHandlingByType(new Error('no tokens'));
             }
         } catch (error) {
             this.logger.error(error);
@@ -225,8 +227,6 @@ class ClientApi extends Api {
                 async (err: AxiosError<AmoBodyError>) => {
                     const errorBody = err.response ? err.response.data : null;
                     this.logger.error(err.response?.data);
-                    console.log(err);
-                    
 
                     if (errorBody && 'validation-errors' in errorBody) {
                         errorBody['validation-errors'].forEach((element) =>
@@ -266,47 +266,59 @@ class ClientApi extends Api {
         return res.data;
     });
 
-    //================================================================================================
-    //================================================================================================
-    //================================================================================================
-    //================================================================================================
-    //================================================================================================
-    //================================================================================================
+    getDeal: (dealId: number) => Promise<LeadData> = this.authChecker(async (dealId: number) => {
+        const res = await axios.get(`${this.ROOT_URL}/api/v4/leads/${dealId}`, {
+            headers: {
+                Authorization: `Bearer ${this.ACCESS_TOKEN}`
+            }
+        });
+        return res.data;
+    });
 
+    addDeal: (deals: LeadData[]) => Promise<any> = this.authChecker(async (deals: LeadData[]) => {
+        const res = await axios.post(`${this.ROOT_URL}/api/v4/leads`, {
+            ...deals
+        }, {
+            headers: {
+                Authorization: `Bearer ${this.ACCESS_TOKEN}`
+            }
+        });
+
+        return res.data;
+    });
 
     getDealName: (dealId: number) => Promise<string> = this.authChecker(async (dealId: number) => {
         const res = await axios.get(`${this.ROOT_URL}/api/v4/leads/${dealId}`, {
             headers: {
                 Authorization: `Bearer ${this.ACCESS_TOKEN}`
             }
-        })
+        });
+
         return res.data.name;
-    })
+    });
 
     getSources: () => Promise<void> = this.authChecker(async () => {
-        try {            
-            const res = await axios.get(`${this.ROOT_URL}/api/v4/sources`, {
+        try {
+            await axios.get(`${this.ROOT_URL}/api/v4/sources`, {
                 headers: {
                     Authorization: `Bearer ${this.ACCESS_TOKEN}`
                 }
-            })
-            console.log(res.data._embedded.sources);
-            
+            });
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
-                console.log(error?.response?.data['validation-errors'][0].errors || error?.response?.data);         
+                this.logger.debug(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
             }
         }
-    })
+    });
 
-    addSource: (pipeline_id: number, botName: string) => Promise<AmoChatSourceInterface | null> = this.authChecker(async (pipeline_id: number, botName: string) => {
+    addSource: (pipelineId: number, botName: string) => Promise<AmoChatSourceInterface | null> = this.authChecker(async (pipelineId: number, botName: string) => {
         try {
             const res = await axios.post(
                 `${this.ROOT_URL}/api/v4/sources`,
                 [{
-                    name:`reon-tg-chat-${botName}`,
+                    name: `reon-tg-chat-${botName}`,
                     external_id: uuidv4(),
-                    pipeline_id: pipeline_id,
+                    pipeline_id: pipelineId
                 }],
                 {
                     headers: {
@@ -314,18 +326,18 @@ class ClientApi extends Api {
                     }
                 }
             );
+
             return res.data._embedded.sources[0];
-            
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
-                console.log('Error adding source');
-                console.log(error?.response?.data['validation-errors'][0].errors || error?.response?.data);         
+                this.logger.debug('Error adding source');
+                this.logger.debug(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
             }
         }
         return null;
-    })
+    });
 
-    editSource: (newSource: {id: number, pipeline_id: number}) => Promise<AmoChatSourceInterface | null> = this.authChecker(async (newSource: {id: number, pipeline_id: number}) => {
+    editSource: (newSource: { id: number, pipelineId: number }) => Promise<AmoChatSourceInterface | null> = this.authChecker(async (newSource: { id: number, pipelineId: number }) => {
         try {
             const res = await axios.patch(
                 `${this.ROOT_URL}/api/v4/sources`,
@@ -338,42 +350,23 @@ class ClientApi extends Api {
                     }
                 }
             );
-            
+
             return res.data._embedded.sources[0];
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
-                console.log('Error editing source');
-                console.log(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
+                this.logger.debug('Error editing source');
+                this.logger.debug(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
             }
         }
         return null;
-    })
-
-    // delSource: (sourceId: number) => Promise<void> = this.authChecker(async (sourceId: number) => {
-    //     try {
-    //         await axios.delete(
-    //             `${this.ROOT_URL}/api/v4/sources/${sourceId}`,
-    //             {
-    //                 headers: {
-    //                     Authorization: `Bearer ${this.ACCESS_TOKEN}`
-    //                 }
-    //             }
-    //         );
-            
-    //     } catch (error: unknown) {
-    //         if (error instanceof AxiosError) {
-    //             console.log('Error deleting source');
-    //             console.log(error?.response?.data['validation-errors'][0].errors || error?.response?.data);         
-    //         }           
-    //     }
-    // })
+    });
 
     delSource: (sources: AmoChatSourceInterface[]) => Promise<void> = this.authChecker(async (sources: AmoChatSourceInterface[]) => {
         try {
             await axios.delete(
                 `${this.ROOT_URL}/api/v4/sources`,
                 {
-                    data: sources.map(source => ({id: source.id})),
+                    data: sources.map(source => ({ id: source.id })),
                     headers: {
                         Authorization: `Bearer ${this.ACCESS_TOKEN}`
                     }
@@ -382,11 +375,11 @@ class ClientApi extends Api {
 
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
-                console.log('Error deleting source');
-                console.log(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
+                this.logger.debug('Error deleting source');
+                this.logger.debug(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
             }
         }
-    })
+    });
 
     createContact: (contactName: string) => Promise<number | null> = this.authChecker(async (contactName: string) => {
         try {
@@ -402,18 +395,18 @@ class ClientApi extends Api {
                         Authorization: `Bearer ${this.ACCESS_TOKEN}`
                     }
                 }
-            )
-            
+            );
+
             return res.data._embedded.contacts[0].id || null;
-            
+
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
-                console.log('Error creating contact');
-                console.log(error?.response?.data['validation-errors'][0].errors || error?.response?.data);         
+                this.logger.debug('Error creating contact');
+                this.logger.debug(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
             }
             return null;
         }
-    })
+    });
 
     linkContactToLead: (leadId: number, contactId: number) => Promise<void> = this.authChecker(async (leadId: number, contactId: number) => {
         try {
@@ -431,41 +424,37 @@ class ClientApi extends Api {
                     }
                 }
             );
-            
+
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
-                console.log('Error linking contact to lead'); 
-                console.log(error?.response?.data['validation-errors'][0].errors || error?.response?.data);         
-            }          
+                this.logger.debug('Error linking contact to lead');
+                this.logger.debug(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
+            }
         }
-    })
+    });
 
-    linkChatToContact: (chat_id: string, contact_id: number) => Promise<void> = this.authChecker(async (chat_id: string, contact_id: number) => {
+    linkChatToContact: (chatId: string, contactId: number) => Promise<void> = this.authChecker(async (chatId: string, contactId: number) => {
         try {
-            const res = await axios.post(
+            await axios.post(
                 `${this.ROOT_URL}/api/v4/contacts/chats`,
-                [
-                    {
-                        contact_id,
-                        chat_id,
-                    }
-                ],
+                [{
+                    contact_id: chatId,
+                    chat_id: contactId
+                }],
                 {
                     headers: {
                         Authorization: `Bearer ${this.ACCESS_TOKEN}`
                     }
                 }
             );
-            // console.log(res.data?._embedded?.chats[0]);
-            
+
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
-                console.log('Error linking chat to contact');
-                console.log(error?.response?.data?.['validation-errors']?.[0]?.errors || error?.response?.data);         
-            }          
+                this.logger.debug('Error linking chat to contact');
+                this.logger.debug(error?.response?.data?.['validation-errors']?.[0]?.errors || error?.response?.data);
+            }
         }
-    })
-
+    });
 }
 
 export default ClientApi;

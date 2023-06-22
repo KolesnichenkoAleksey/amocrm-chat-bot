@@ -23,9 +23,6 @@ dotenv.config({
 
 const SECOND_IN_MILLISECONDS = 1000;
 
-//============================================================================================================================
-//============================================================================================================================
-//============================================================================================================================
 function createSendMessageBody(userId: number, groupId: number, text: string, userName: string): ChatApiSendMessageBody {
 
     const currentDateInTimeStamp = dayjs().unix();
@@ -46,33 +43,29 @@ function createSendMessageBody(userId: number, groupId: number, text: string, us
             },
             'message': {
                 'type': 'text',
-                'text': text,
+                'text': text
             },
-            'silent': false,
+            'silent': false
         }
     };
 }
 
-function createNewChatBody(userId: number, groupId: number, external_id: string, userName: string): ChatApiCreateChatBody 
-{
+function createNewChatBody(userId: number, groupId: number, externalId: string, userName: string): ChatApiCreateChatBody {
 
     return {
         'conversation_id': `reon-${utils.hashFunction(String(groupId) + String(userId))}`,
         'source': {
-            'external_id': external_id
+            'external_id': externalId
         },
         'user': {
             'id': `reon-${utils.hashFunction(String(userId))}`,
             'name': userName,
             'avatar': 'https://example.com/users/avatar.png',
             'profile': {},
-            'profile_link': 'https://example.com/profile/example.client',
+            'profile_link': 'https://example.com/profile/example.client'
         }
     };
 }
-//============================================================================================================================
-//============================================================================================================================
-//============================================================================================================================
 
 class AmoChatAPI {
     private REQ_URL: string = 'https://amojo.amocrm.ru';
@@ -148,23 +141,20 @@ class AmoChatAPI {
         try {
             const sendMessageBody = createSendMessageBody(userId, groupId, text, userName);
 
-            const res = await axios.post(
+            await axios.post(
                 `${this.REQ_URL}/v2/origin/custom/${scopeId}`,
                 { ...sendMessageBody },
                 { headers: this.getHeaders('post', `/v2/origin/custom/${scopeId}`, sendMessageBody) }
             );
-            
+
         } catch (error: unknown) {
             errorHandlingByType(error);
         }
     }
 
-    //============================================================================================================================
-    //============================================================================================================================
-    //============================================================================================================================
-    async createChat(scopeId: string, userId: number, groupId: number, external_id: string, userName: string): Promise<ChatApiNewChat | null> {
+    async createChat(scopeId: string, userId: number, groupId: number, externalId: string, userName: string): Promise<ChatApiNewChat | null> {
         try {
-            const newChatBody = createNewChatBody(userId, groupId, external_id, userName);
+            const newChatBody = createNewChatBody(userId, groupId, externalId, userName);
 
             const res = await axios.post(
                 `${this.REQ_URL}/v2/origin/custom/${scopeId}/chats`,
@@ -177,10 +167,6 @@ class AmoChatAPI {
         }
         return null;
     }
-    //============================================================================================================================
-    //============================================================================================================================
-    //============================================================================================================================
-
 }
 
 export default new AmoChatAPI();

@@ -9,9 +9,8 @@ import BotsState from '../state/BotsState';
 class ChatChannelController {
     async sendMessage(req: TypedRequestChatNewMessage, res: Response, next: NextFunction) {
         try {
-            //=================================================================================
-            const newMessageBody = req.body
-            const scopeId = req.params.scope_id
+            const newMessageBody = req.body;
+            const scopeId = req.params.scope_id;
 
             if (!newMessageBody) {
                 return next(ApiError.badRequest('Не были полученны данные о сообщении!'));
@@ -20,9 +19,7 @@ class ChatChannelController {
             if (!scopeId) {
                 return next(ApiError.badRequest('Не был передан scopeId!'));
             }
-            
-            console.log(scopeId);
-            console.log(newMessageBody);
+
             const chatId = newMessageBody.message.conversation.id;
             const text = newMessageBody.message.message.text;
 
@@ -31,19 +28,20 @@ class ChatChannelController {
             }
 
             const appUser = await mongoManager.getWidgetUserByScopeId(scopeId);
+
             if (!appUser) {
                 return next(ApiError.badRequest('Не найден пользователь амо!'));
             }
+
             const tgGroup = await mongoManager.getTgGroupByChatId(appUser.accountId, chatId);
+
             if (tgGroup) {
-                const bot = BotsState.getBotByToken(tgGroup.telegramBotToken)
+                const bot = BotsState.getBotByToken(tgGroup.telegramBotToken);
                 if (bot && bot.botInstance) {
-                    await bot.botInstance.sendMessage(tgGroup.telegramGroupId, text)
+                    await bot.botInstance.sendMessage(tgGroup.telegramGroupId, text);
                 }
             }
 
-            //=================================================================================
-            
             return res.status(StatusCodes.Ok.Code).json({ message: `${Date.now()}` });
         } catch (error: unknown) {
 

@@ -1,129 +1,121 @@
-import { Context, Telegraf } from 'telegraf';
+import { Context, Markup, Scenes, Telegraf } from 'telegraf';
 import { NextFunction } from 'express';
-import { mainLogger } from '../logger/logger';
 import mongoManager from '../mongo/MongoManager';
 import amoChatAPI from '../../API/amoChatAPI';
+import { errorHandlingByType } from '../../error/errorHandlingByType';
+import { Message, Update } from 'typegram';
+import MessageUpdate = Update.MessageUpdate;
 import ClientApi from '../../API/amoAPI';
-import dayjs from 'dayjs';
+import TextMessage = Message.TextMessage;
 
 export class BotListeners {
 
-    constructor(botInstance: Telegraf) {
+    constructor(botInstance: Telegraf<Scenes.WizardContext>) {
         this.defineOnActionListeners(botInstance);
         this.defineCommandActionListeners(botInstance);
+        this.defineActionListeners(botInstance)
     }
 
-    defineOnActionListeners(botInstance: Telegraf): void {
-        botInstance.on('text', this.replyHello);
-        botInstance.on('message', this.replyGoodBye);
+    defineOnActionListeners(botInstance: Telegraf<Scenes.WizardContext>): void {
+        botInstance.on('text', this.textListener);
     };
 
-    defineCommandActionListeners(botInstance: Telegraf): void {
+    defineCommandActionListeners(botInstance: Telegraf<Scenes.WizardContext>): void {
         botInstance.command('menu', this.menuCommandAction);
         botInstance.command('linkDeal', this.linkDealCommandAction);
     }
 
-    private async replyHello(ctx: Context<any>, next: NextFunction) {
-        if (ctx?.update?.message?.entities?.find((entity: { offset: number, length: number, type: string }) => entity.type === 'bot_command')) {
-            return next();
-        }
+    defineActionListeners(botInstance: Telegraf<Scenes.WizardContext>): void {
+        botInstance.action('linkedDeal', this.linkedDealButtonAction);
+    }
 
-        const telegramToken = ctx.telegram.token;
-        const appUser = await mongoManager.getWidgetUserByBotToken(telegramToken);
-        
-        if (!appUser) {
-            return ctx.reply('Бот не привязан к аккаунту');
-        }
+    // on block
+    private async textListener(ctx: Context<MessageUpdate<TextMessage>>, next: NextFunction): Promise<void> {
+        try {
+            if (ctx?.update?.message?.entities && ctx?.update?.message?.entities?.find((entity: { offset: number, length: number, type: string }) => entity.type === 'bot_command')) {
+                return next();
+            }
 
-        const userTelegramId = ctx?.update?.message?.from?.id;
-        const userName = ctx?.update?.message?.from?.first_name;
+            const telegramToken = ctx.telegram.token;
+            const appUser = await mongoManager.getWidgetUserByBotToken(telegramToken);
 
-        const groupId = ctx?.update?.message?.chat?.id;        
-        const groupName = ctx?.update?.message?.chat?.title || ctx?.update?.chat?.first_name || userName;
+            if (!appUser) {
+                await ctx.reply('Бот не привязан к аккаунту');
+            }
 
-        const messageText = ctx?.update?.message?.text;
+            const userTelegramId = ctx?.update?.message?.from?.id;
+            const userName = ctx?.update?.message?.from?.first_name;
 
+            const groupId = ctx?.update?.message?.chat?.id;
+            const groupName = 'title' in ctx.update.message.chat ? ctx.update.message.chat.title : ctx.update.message.chat.first_name;
 
-        // при удалении бота удалять источник 
-        // при удалении бота удалять источник
-        // при удалении бота удалять источник
-        // при удалении бота удалять источник
-        // при удалении бота удалять источник
-        // РЕАЛИЗОВАЛ ВРОДЕ РАБОТАЕТ
+            const messageText = ctx?.update?.message?.text;
 
+            const linkedGroup = await mongoManager.getLinkedGroup(appUser.accountId, groupId);
 
-        // когда должно создаваться неразобранное если боту пишут в личку
-        // когда должно создаваться неразобранное если боту пишут в личку
-        // когда должно создаваться неразобранное если боту пишут в личку
-        // когда должно создаваться неразобранное если боту пишут в личку
-
-
-        const linkedGroup = await mongoManager.getLinkedGroup(appUser.accountId, groupId);
-
-        if (!linkedGroup) {
-            await mongoManager.addLinkedGroup(appUser.accountId, 
-                {
-                    telegramBotToken: telegramToken,
-                    telegramGroupId: groupId,
-                    telegramGroupName: groupName,
-                    deals: [],
-                    amoChatIds: [],
-                }
-            )
-        }
-
-        // поиск контакта у нас в бд
-        const contactId = await mongoManager.getAmoContactIdByTgUserId(appUser.accountId, userTelegramId);
-        const api = new ClientApi({subDomain: appUser.widgetUserSubdomain, accountId: appUser.accountId});
-
-        if (!contactId) {
-            const newContactId = await api.createContact(userName)
-            if (newContactId) {
-                await mongoManager.addContactToAccount(appUser.accountId, 
+            if (!linkedGroup) {
+                await mongoManager.addLinkedGroup(appUser.accountId,
                     {
-                        amoCRMContactId: newContactId,
-                        telegramName: userName,
-                        telegramUserId: userTelegramId
+                        telegramBotToken: telegramToken,
+                        telegramGroupId: groupId,
+                        telegramGroupName: groupName,
+                        deals: [],
+                        amoChatIds: [],
                     }
                 )
             }
-        }
 
-        const amoContactId = await mongoManager.getAmoContactIdByTgUserId(appUser.accountId, userTelegramId);
-        const [bot] = appUser.initializingBots.filter(bot => bot.botToken === telegramToken);
+            // поиск контакта у нас в бд
+            const contactId = await mongoManager.getAmoContactIdByTgUserId(appUser.accountId, userTelegramId);
+            const api = new ClientApi({subDomain: appUser.widgetUserSubdomain, accountId: appUser.accountId});
 
-        const newChat = await amoChatAPI.createChat(appUser.amojoScopeId, userTelegramId, groupId, bot.amoChatsSource.external_id, userName + 'Group');
-        if (newChat && amoContactId) {
-            await mongoManager.addAmoChatByTgGroupId(appUser.accountId, groupId, newChat.id);
-
-            await api.linkChatToContact(newChat.id, amoContactId);
-            await new Promise(res => setTimeout(res, 1000))
-
-            const groupDeals = await mongoManager.getGroupDeals(appUser.accountId, groupId)
-            if (groupDeals) {
-                for (const deal of groupDeals) {
-                    await api.linkContactToLead(deal.id, amoContactId);
+            if (!contactId) {
+                const newContactId = await api.createContact(userName)
+                if (newContactId) {
+                    await mongoManager.addContactToAccount(appUser.accountId,
+                        {
+                            amoCRMContactId: newContactId,
+                            telegramName: userName,
+                            telegramUserId: userTelegramId
+                        }
+                    )
                 }
-                await new Promise(res => setTimeout(res, 1000));
             }
 
-            await amoChatAPI.sendMessage(appUser.amojoScopeId, userTelegramId, groupId, messageText, userName);
+            const amoContactId = await mongoManager.getAmoContactIdByTgUserId(appUser.accountId, userTelegramId);
+            const [bot] = appUser.initializingBots.filter(bot => bot.botToken === telegramToken);
+
+            const newChat = await amoChatAPI.createChat(appUser.amojoScopeId, userTelegramId, groupId, bot.amoChatsSource.external_id, userName + 'Group');
+            if (newChat && amoContactId) {
+                await mongoManager.addAmoChatByTgGroupId(appUser.accountId, groupId, newChat.id);
+
+                await api.linkChatToContact(newChat.id, amoContactId);
+                await new Promise(res => setTimeout(res, 1000))
+
+                const groupDeals = await mongoManager.getGroupDeals(appUser.accountId, groupId)
+                if (groupDeals) {
+                    for (const deal of groupDeals) {
+                        await api.linkContactToLead(deal.id, amoContactId);
+                    }
+                    await new Promise(res => setTimeout(res, 1000));
+                }
+
+                await amoChatAPI.sendMessage(appUser.amojoScopeId, userTelegramId, groupId, messageText, userName);
+            }
+
+            await ctx.reply('Hello!');
+        } catch (error: unknown) {
+            return errorHandlingByType(error);
         }
-
-        return ctx.reply('Hello!');
-    };
-
-    private replyGoodBye(ctx: Context<any>, next: NextFunction) {
-        if (ctx?.update?.message?.entities?.find((entity: { offset: number, length: number, type: string }) => entity.type === 'bot_command')) {
-            return next();
-        }
-
-        return ctx.reply('Goodbye!');
     };
 
     // command block
     private menuCommandAction(menuCommandContext: Context<any>) {
-        return menuCommandContext.reply('Управление ботом');
+        return menuCommandContext.replyWithHTML('Управление ботом', {
+            ...Markup.inlineKeyboard([
+                [Markup.button.callback('Связанные сделки', 'linkedDeal')]
+            ])
+        });
     }
 
     private async linkDealCommandAction(linkDealCommandContext: Context<any>) {
@@ -131,11 +123,13 @@ export class BotListeners {
             const payload = linkDealCommandContext?.update?.message?.text.replace('/linkDeal', '').trim() || undefined;
 
             if (!payload) {
-                return linkDealCommandContext.reply('Не указан Id сделки!');
+                await linkDealCommandContext.reply('Не указан Id сделки!');
+                return;
             }
 
             if (!Number(payload)) {
-                return linkDealCommandContext.reply('Id сделки должен быть числом!');
+                await linkDealCommandContext.reply('Id сделки должен быть числом!');
+                return;
             }
 
             const telegramToken = linkDealCommandContext.telegram.token;
@@ -143,29 +137,38 @@ export class BotListeners {
             const appUser = await mongoManager.getWidgetUserByBotToken(telegramToken);
 
             if (!appUser) {
-                return linkDealCommandContext.reply('Бот не привязан к аккаунту');
+                await linkDealCommandContext.reply('Бот не привязан к аккаунту');
+                return;
             }
 
             const groupId = linkDealCommandContext.update.message.chat.id;
 
-            //========================================================================================================================
-            const groupName = linkDealCommandContext.update.message.chat.title || linkDealCommandContext.update.message.chat.first_name            
+            const groupName = 'title' in linkDealCommandContext.update.message.chat ? linkDealCommandContext.update.message.chat.title : linkDealCommandContext.update.message.chat.first_name;
 
-            const api = new ClientApi({subDomain: appUser.widgetUserSubdomain, accountId: appUser.accountId})
-            const dealName: string = await api.getDealName(payload) || ''
+            const api = new ClientApi({ subDomain: appUser.widgetUserSubdomain, accountId: appUser.accountId });
 
-            const deal = {id: Number(payload), name: dealName}
+            const { name = null } = await api.getDeal(Number(payload));
+
+            if (!name) {
+                await linkDealCommandContext.reply('Не удалось получить назавание сделки!');
+            }
+
+            const deal = { id: Number(payload), name };
+
             await mongoManager.linkDeal(appUser.accountId, deal, groupId, groupName, telegramToken);
-            //========================================================================================================================
 
-            return linkDealCommandContext.reply('Сделка связана!');
+            await linkDealCommandContext.reply('Сделка связана!');
         } catch (error: unknown) {
-            if (error instanceof Error) {
-                mainLogger.debug(error.message);
-            }
-            if (typeof error === 'string') {
-                mainLogger.debug(error);
-            }
+            errorHandlingByType(error);
+        }
+    }
+
+    // actions block
+    private async linkedDealButtonAction(ctx): Promise<void> {
+        try {
+            await ctx.scene.enter('linked-deal-wizard');
+        } catch (error: unknown) {
+            errorHandlingByType(error);
         }
     }
 }

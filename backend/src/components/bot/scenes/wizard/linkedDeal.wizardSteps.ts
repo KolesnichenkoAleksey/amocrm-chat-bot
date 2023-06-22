@@ -5,7 +5,7 @@ import { CallbackQuery, Update } from 'typegram';
 import CallbackQueryUpdate = Update.CallbackQueryUpdate;
 import DataQuery = CallbackQuery.DataQuery;
 import { WizardContext } from 'telegraf/typings/scenes';
-import { LinkedGroups } from '../../../../@types/models/LinkedDealsInterface';
+import { LinkedGroup } from '../../../../@types/models/LinkedDealsInterface';
 import mongoManager from '../../../mongo/MongoManager';
 import ClientApi from '../../../../API/amoAPI';
 
@@ -25,7 +25,7 @@ async function dealListButtonsHandler(context: Context<CallbackQueryUpdate>): Pr
     try {
         const telegramChatId = context.update.callback_query.message.chat.id;
 
-        const linkedDeals: LinkedGroups | null = await mongoManager.getLinkedDealByTelegramId(telegramChatId);
+        const linkedDeals: LinkedGroup | null = await mongoManager.getLinkedDealByTelegramId(telegramChatId);
 
         if (!linkedDeals) {
             await context.editMessageText('Нет связанных сделок!');

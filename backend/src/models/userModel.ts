@@ -17,19 +17,17 @@ const User = new Schema<UserInterface>({
         type: Array({
             botToken: { type: String, require: true },
             botName: { type: String, require: true },
-            //================================================
-            amoChatsSource: { 
+            amoChatsSource: {
                 type: Object({
-                    id: { type: Number, require: true},
-                    name: { type: String, require: true},
-                    external_id: { type: String, require: true},
-                }), require: true 
+                    id: { type: Number, require: true },
+                    name: { type: String, require: true },
+                    external_id: { type: String, require: true }
+                }), require: true
             },
-            //================================================
             pipeline: {
                 type: Object({
-                    id: { type: Number, require: true},
-                    name: { type: String, require: true},
+                    id: { type: Number, require: true },
+                    name: { type: String, require: true }
                 }), require: true
             }
         }), require: true
