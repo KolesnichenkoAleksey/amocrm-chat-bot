@@ -1,0 +1,1 @@
+export type ctxUpdateEntity = { offset: number, length: number, type: string }

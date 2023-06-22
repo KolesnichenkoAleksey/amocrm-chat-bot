@@ -149,11 +149,11 @@ class AmoChatAPI {
         try {
             const sendMessageBody = createChatBody(userId, groupId);
 
-            console.log(await axios.post(
+            await axios.post(
                 `${this.REQ_URL}/v2/origin/custom/${scopeId}/chats`,
                 { ...sendMessageBody },
                 { headers: this.getHeaders('post', `/v2/origin/custom/${scopeId}/chats`, sendMessageBody) }
-            ));
+            );
 
         } catch (error: unknown) {
             errorHandlingByType(error);

@@ -1,26 +1,29 @@
 import { Context, Markup, Scenes, Telegraf } from 'telegraf';
 import { NextFunction } from 'express';
-import { mainLogger } from '../logger/logger';
 import mongoManager from '../mongo/MongoManager';
 import amoChatAPI from '../../API/amoChatAPI';
 import { errorHandlingByType } from '../../error/errorHandlingByType';
-import { Message, Update } from 'typegram';
-import MessageUpdate = Update.MessageUpdate;
 import ClientApi from '../../API/amoAPI';
 import { LeadData } from '../../@types/amo/api/amo-api.types';
 import { ApiError } from '../../error/ApiError';
+import { ctxUpdateEntity } from '../../@types/bot/BotContext';
+import { Message, Update } from 'typegram';
+import MessageUpdate = Update.MessageUpdate;
+import TextMessage = Message.TextMessage;
+import { SceneContext } from 'telegraf/typings/scenes';
+import { MatchedMiddleware } from 'telegraf/typings/composer';
 
 export class BotListeners {
 
     constructor(botInstance: Telegraf<Scenes.WizardContext>) {
         this.defineOnActionListeners(botInstance);
         this.defineCommandActionListeners(botInstance);
-        this.defineActionListeners(botInstance)
+        this.defineActionListeners(botInstance);
     }
 
     defineOnActionListeners(botInstance: Telegraf<Scenes.WizardContext>): void {
         botInstance.on('text', this.textListener);
-    };
+    }
 
     defineCommandActionListeners(botInstance: Telegraf<Scenes.WizardContext>): void {
         botInstance.command('menu', this.menuCommandAction);
@@ -32,42 +35,47 @@ export class BotListeners {
     }
 
     // on block
-    private async textListener(ctx: Context<MessageUpdate<Message.TextMessage>>, next: NextFunction): Promise<Message.TextMessage | void> {
+    private async textListener(ctx: Context<MessageUpdate<TextMessage>>, next: NextFunction): Promise<void> {
         try {
-            if (ctx?.update?.message?.entities && ctx?.update?.message?.entities?.find((entity: { offset: number, length: number, type: string }) => entity.type === 'bot_command')) {
+            // Если сделки нету, то контакт не привязывается к той сделке
+
+            if (ctx?.update?.message?.entities && ctx?.update?.message?.entities?.find((entity: ctxUpdateEntity) => entity.type === 'bot_command')) {
                 return next();
             }
 
             const userTelegramId = ctx?.update?.message?.from?.id;
 
             if (!userTelegramId) {
-                throw new Error('Не удалось получить telegramId');
+                errorHandlingByType(new Error('Не удалось получить telegramId'));
+                return;
             }
 
             const telegramToken = ctx.telegram.token;
 
             if (!telegramToken) {
-                throw new Error('Не удалось получить telegramToken!');
+                errorHandlingByType(new Error('Не удалось получить telegramToken!'));
+                return;
             }
 
             const messageText = ctx?.update?.message?.text;
 
             if (!messageText) {
-                throw new Error('Не удалось получить текст сообщения!');
+                errorHandlingByType(new Error('Не удалось получить текст сообщения!'));
+                return;
             }
 
             const groupId = ctx?.update?.message?.from?.id === ctx?.update?.message?.chat?.id ? ctx?.update?.message?.from?.id : ctx?.update?.message?.chat?.id;
 
             if (!groupId) {
-                throw new Error('Не удалось получить groupId!');
+                errorHandlingByType(new Error('Не удалось получить groupId!'));
+                return;
             }
-
-            const isPersonalChat = ctx?.update?.message?.from?.id === ctx?.update?.message?.chat?.id;
 
             const appUser = await mongoManager.getWidgetUserByBotToken(telegramToken);
 
             if (!appUser) {
-                return ctx.reply('Бот не привязан к аккаунту');
+                await ctx.reply('Бот не привязан к аккаунту');
+                return;
             }
 
             const currentBot = appUser.initializingBots.find((bot) => bot.botToken === ctx.telegram.token);
@@ -109,31 +117,37 @@ export class BotListeners {
 
             await amoChatAPI.sendMessage(appUser.amojoScopeId, userTelegramId, groupId, messageText);
 
-            return ctx.reply('Hello!');
+            await ctx.reply('Hello!');
         } catch (error: unknown) {
-            return errorHandlingByType(error);
+            errorHandlingByType(error);
         }
     };
 
     // command block
-    private menuCommandAction(menuCommandContext: Context<any>) {
-        return menuCommandContext.replyWithHTML('Управление ботом', {
-            ...Markup.inlineKeyboard([
-                [Markup.button.callback('Связанные сделки', 'linkedDeal')]
-            ])
-        });
+    private async menuCommandAction(menuCommandContext: Context<MessageUpdate<TextMessage>>): Promise<void> {
+        try {
+            await menuCommandContext.replyWithHTML('Управление ботом', {
+                ...Markup.inlineKeyboard([
+                    [Markup.button.callback('Связанные сделки', 'linkedDeal')]
+                ])
+            });
+        } catch (error: unknown) {
+            errorHandlingByType(error);
+        }
     }
 
-    private async linkDealCommandAction(linkDealCommandContext: Context<any>) {
+    private async linkDealCommandAction(linkDealCommandContext: Context<MessageUpdate<TextMessage>>): Promise<void> {
         try {
             const payload = linkDealCommandContext?.update?.message?.text.replace('/linkDeal', '').trim() || undefined;
 
             if (!payload) {
-                return linkDealCommandContext.reply('Не указан Id сделки!');
+                await linkDealCommandContext.reply('Не указан Id сделки!');
+                return;
             }
 
             if (!Number(payload)) {
-                return linkDealCommandContext.reply('Id сделки должен быть числом!');
+                await linkDealCommandContext.reply('Id сделки должен быть числом!');
+                return;
             }
 
             const telegramToken = linkDealCommandContext.telegram.token;
@@ -141,38 +155,38 @@ export class BotListeners {
             const appUser = await mongoManager.getWidgetUserByBotToken(telegramToken);
 
             if (!appUser) {
-                return linkDealCommandContext.reply('Бот не привязан к аккаунту');
+                await linkDealCommandContext.reply('Бот не привязан к аккаунту');
+                return;
             }
 
             const groupId = linkDealCommandContext.update.message.chat.id;
 
-            const groupName = linkDealCommandContext.update.message.chat.title || linkDealCommandContext.update.message.chat.first_name;
+            const groupName = 'title' in linkDealCommandContext.update.message.chat ? linkDealCommandContext.update.message.chat.title : linkDealCommandContext.update.message.chat.first_name;
 
             const api = new ClientApi({ subDomain: appUser.widgetUserSubdomain, accountId: appUser.accountId });
 
-            const { name } = await api.getDeal(Number(payload)) || '';
+            const { name = null } = await api.getDeal(Number(payload));
 
             if (!name) {
-                return linkDealCommandContext.reply('Не удалось получить назавание сделки!');
+                await linkDealCommandContext.reply('Не удалось получить назавание сделки!');
             }
 
             const deal = { id: Number(payload), name };
 
             await mongoManager.linkDeal(appUser.accountId, deal, groupId, groupName, telegramToken);
 
-            return linkDealCommandContext.reply('Сделка связана!');
+            await linkDealCommandContext.reply('Сделка связана!');
         } catch (error: unknown) {
-            if (error instanceof Error) {
-                mainLogger.debug(error.message);
-            }
-            if (typeof error === 'string') {
-                mainLogger.debug(error);
-            }
+            errorHandlingByType(error);
         }
     }
 
     // actions block
-    private async linkedDealButtonAction(ctx: any) {
-        ctx.scene.enter('linked-deal-wizard')
+    private async linkedDealButtonAction(ctx): Promise<void> {
+        try {
+            await ctx.scene.enter('linked-deal-wizard');
+        } catch (error: unknown) {
+            errorHandlingByType(error);
+        }
     }
 }

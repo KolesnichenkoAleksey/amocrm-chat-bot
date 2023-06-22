@@ -237,23 +237,23 @@ class BotController {
                 return next(ApiError.badRequest('Не был передан SubDomain!'));
             }
 
-            // const userLogger = getUserLogger(accountId);
-
             const initializingBots = await mongoManager.getAllBotsByAccountId(accountId);
 
             if (!initializingBots) {
-                // userLogger.debug(`У пользователя ${subdomain} нету ботов!`);
-                return next(ApiError.notFound(`У пользователя ${accountId} нету ботов!`));
+                mainLogger.debug(`У пользователя c id ${accountId} нету ботов!`);
+                return next(ApiError.notFound(`У пользователя c id ${accountId} нету ботов!`));
             }
 
             const bots = [];
 
             for (const bot of initializingBots) {
                 const relatedTgGroups = await mongoManager.getBotTgGroups(accountId, bot.botToken);
-                bots.push({
-                    ...bot,
-                    relatedTgGroups
-                });
+                if (relatedTgGroups) {
+                    bots.push({
+                        ...bot,
+                        relatedTgGroups
+                    });
+                }
             }
 
             return res.status(StatusCodes.Ok.Code).json(bots);

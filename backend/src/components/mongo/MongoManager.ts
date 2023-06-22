@@ -11,18 +11,20 @@ import { LinkedContact, LinkedContactsInterface } from '../../@types/models/Link
 import linkedDealsModel from '../../models/linkedDealsModel';
 
 class ManagerMongoDB {
-    async connect(UriConnection: string, ConnectionOptions: DataBaseConnectionOptions) {
+    async connect(UriConnection: string, ConnectionOptions: DataBaseConnectionOptions): Promise<void> {
         mongoose.set('strictQuery', true);
         await mongoose.connect(UriConnection, ConnectionOptions);
     };
 
     async getWidgetUserByAccountId(accountId: number): Promise<UserInterface | null> {
-        if (!accountId) {
-            return null;
-        }
-
         try {
+            if (!accountId) {
+                mainLogger.debug(`Не был передан AccountId`);
+                return null;
+            }
+
             const widgetUser = await User.findOne({ accountId }, { _id: 0 }).lean();
+
             return widgetUser || null;
         } catch (error: unknown) {
             mainLogger.debug(`Пользователь с Id ${accountId} не был найден!`);
@@ -34,6 +36,7 @@ class ManagerMongoDB {
 
     async getWidgetUserBySubdomain(subdomain: string): Promise<UserInterface | null> {
         if (!subdomain) {
+            mainLogger.debug(`Не был передан Subdomain`);
             return null;
         }
 
@@ -52,7 +55,13 @@ class ManagerMongoDB {
 
     async getWidgetUserByBotToken(botToken: string): Promise<UserInterface | null> {
         try {
+            if (!botToken) {
+                mainLogger.debug(`Не был передан botToken`);
+                return null;
+            }
+
             const widgetUser = await User.findOne({ 'initializingBots.botToken': botToken }, { _id: 0 }).lean();
+
             return widgetUser || null;
         } catch (error: unknown) {
             mainLogger.debug(`Пользователь с токеном ${botToken} не был найден!`);
@@ -63,15 +72,15 @@ class ManagerMongoDB {
 
     async insertUser(userContent: UserInterface): Promise<void> {
 
+        if (!userContent) {
+            mainLogger.debug(`Не была передана информация о пользователе!`);
+            return;
+        }
+
         const logger = getUserLogger(userContent.widgetUserSubdomain);
 
         try {
-
-            await User.insertMany(
-                {
-                    ...userContent
-                }
-            );
+            await User.insertMany(userContent);
 
             const userLinkedDeal = await this.getLinkedDealByAppUserId(userContent.accountId);
 
@@ -101,10 +110,14 @@ class ManagerMongoDB {
 
     async updateUser(userContent: UserInterface): Promise<void> {
 
+        if (!userContent) {
+            mainLogger.debug(`Не была передана информация о пользователе!`);
+            return;
+        }
+
         const logger = getUserLogger(userContent.widgetUserSubdomain);
 
         try {
-
             await User.updateOne(
                 { accountId: userContent.accountId },
                 {
@@ -115,7 +128,6 @@ class ManagerMongoDB {
             );
 
             logger.debug(`Данные для ${userContent.widgetUserSubdomain} были обновлены`);
-
         } catch (error: unknown) {
             logger.debug(`Ошибка обновления данных для ${userContent.widgetUserSubdomain}. Ошибка: `);
             errorHandlingByType(error);
@@ -124,6 +136,7 @@ class ManagerMongoDB {
 
     async getAllBotsBySubdomain(subdomain: string): Promise<InitializingBot[] | null> {
         if (!subdomain) {
+            mainLogger.debug(`Не был передан Subdomain`);
             return null;
         }
 
@@ -146,16 +159,24 @@ class ManagerMongoDB {
 
     async getBotBySubdomainAndToken(subdomain: string, botToken: string): Promise<InitializingBot | null> {
         if (!subdomain) {
+            mainLogger.debug(`Не был передан Subdomain`);
             return null;
         }
 
         const logger = getUserLogger(subdomain);
+
         try {
+            if (!botToken.length) {
+                mainLogger.debug(`Не был передан botToken!`);
+                return null;
+            }
+
             const [{ initializingBots = null } = {}] = await User.find({ widgetUserSubdomain: subdomain }, {
                 initializingBots: 1
             }).lean() || null;
 
             return initializingBots ? initializingBots.find((bot) => bot.botToken === botToken) || null : null;
+
         } catch (error: unknown) {
             logger.debug(`Произошла ошибка во время получения бота!`);
             errorHandlingByType(error);
@@ -165,16 +186,17 @@ class ManagerMongoDB {
 
     async deleteBots(subdomain: string, botTokens: string[]): Promise<void> {
         if (!subdomain) {
-            return mainLogger.debug('Для удаления бота/ботов не был передан subdomain!');
-        }
-
-        if (!botTokens.length) {
-            return mainLogger.debug('Для удаления бота/ботов не был/были передан/переданы токен/токены!');
+            mainLogger.debug('Для удаления бота/ботов не был передан subdomain!');
+            return;
         }
 
         const logger = getUserLogger(subdomain);
 
         try {
+            if (!botTokens.length) {
+                return mainLogger.debug('Для удаления бота/ботов не был/были передан/переданы токен/токены!');
+            }
+
             for (const botToken of botTokens) {
                 await User.updateOne({ widgetUserSubdomain: subdomain }, { $pull: { initializingBots: { botToken } } });
             }
@@ -202,7 +224,13 @@ class ManagerMongoDB {
 
     async getLinkedDealByAppUserId(appUserId: number): Promise<LinkedDealsInterface | null> {
         try {
+            if (!appUserId) {
+                mainLogger.debug(`Не был передан userID`);
+                return null;
+            }
+
             const linkedDeals = await LinkedDealsModel.findOne({ widgetUserId: appUserId }, { _id: 0 }).lean();
+
             return linkedDeals || null;
         } catch (error: unknown) {
             mainLogger.debug(`Произошла ошибка во время получения всех привязанных сделок!`);
@@ -215,6 +243,7 @@ class ManagerMongoDB {
     async getLinkedContactsByAppUserId(appUserId: number): Promise<LinkedContactsInterface | null> {
         try {
             const linkedContacts = await LinkedContactsModel.findOne({ widgetUserId: appUserId }, { _id: 0 }).lean();
+
             return linkedContacts || null;
         } catch (error: unknown) {
             mainLogger.debug(`Произошла ошибка во время получения всех привязанных сделок!`);
@@ -225,13 +254,12 @@ class ManagerMongoDB {
     }
 
     async getAllBotsByAccountId(accountId: number): Promise<InitializingBot[] | null> {
-        if (!accountId) {
-            return null;
-        }
-
-        // const logger = getUserLogger(subdomain);
-
         try {
+            if (!accountId) {
+                mainLogger.debug(`Не был передан AccountId`);
+                return null;
+            }
+
             const [{ initializingBots = null } = {}] = await User.find({ accountId }, {
                 initializingBots: 1,
                 _id: 0
@@ -239,7 +267,7 @@ class ManagerMongoDB {
 
             return initializingBots || null;
         } catch (error: unknown) {
-            // logger.debug(`Пользователь с accountId ${accountId} не был найден!`);
+            mainLogger.debug(`Не удалось получить ботов с AccountId => ${accountId}`);
             errorHandlingByType(error);
         }
 
@@ -248,6 +276,21 @@ class ManagerMongoDB {
 
     async changePipeline(accountId: number, botToken: string, pipeline: PipelineInterface): Promise<void> {
         try {
+            if (!accountId) {
+                mainLogger.debug(`Не был передан AccountId`);
+                return;
+            }
+
+            if (!botToken) {
+                mainLogger.debug(`Не был передан botToken`);
+                return;
+            }
+
+            if (!pipeline) {
+                mainLogger.debug(`Не была передана информация о воронке`);
+                return;
+            }
+
             await User.updateOne(
                 { accountId },
                 {
@@ -264,13 +307,25 @@ class ManagerMongoDB {
         }
     }
 
-    async getBotTgGroups(accountId: number, botToken: string): Promise<LinkedGroups[]> {
+    async getBotTgGroups(accountId: number, botToken: string): Promise<LinkedGroups[] | null> {
         try {
+            if (!accountId) {
+                mainLogger.debug(`Не был передан AccountId`);
+                return null;
+            }
+
+            if (!botToken) {
+                mainLogger.debug(`Не был передан botToken`);
+                return null;
+            }
+
             const linkedDeals: LinkedDealsInterface | null = await LinkedDealsModel.findOne({
                 widgetUserId: accountId,
                 'linkedGroups.telegramBotToken': botToken
             }, { widgetUserId: 0, _id: 0, 'linkedGroups.telegramBotToken': 0 }).lean();
+
             const relatedTgGroups = linkedDeals?.linkedGroups || [];
+
             return [...relatedTgGroups];
         } catch (error) {
             mainLogger.debug(`Произошла ошибка получения групп связанных с ботом`);
@@ -281,6 +336,26 @@ class ManagerMongoDB {
 
     async unlinkDeal(accountId: number, botToken: string, groupId: number, dealId: number): Promise<void> {
         try {
+            if (!accountId) {
+                mainLogger.debug(`Не был передан AccountId`);
+                return;
+            }
+
+            if (!botToken) {
+                mainLogger.debug(`Не был передан botToken`);
+                return;
+            }
+
+            if (!groupId) {
+                mainLogger.debug(`Не был передан tgGroupId`);
+                return;
+            }
+
+            if (!dealId) {
+                mainLogger.debug(`Не был передан dealID`);
+                return;
+            }
+
             await linkedDealsModel.updateOne(
                 { widgetUserId: accountId, 'linkedGroups.telegramBotToken': botToken },
                 {
@@ -303,17 +378,39 @@ class ManagerMongoDB {
 
     async linkDeal(appUserId: number, deal: DealInterface, groupId: number, groupName: string, botToken: string): Promise<void> {
         try {
+            if (!appUserId) {
+                mainLogger.debug(`Не был передан appUserId`);
+                return;
+            }
 
-            const linkedDeal = await this.getLinkedDealByAppUserId(appUserId);
+            if (!deal) {
+                mainLogger.debug(`Не была передана информация по сделке`);
+                return;
+            }
 
-            if (!linkedDeal) {
+            if (!groupId) {
+                mainLogger.debug(`Не был передан tgGroupId`);
+                return;
+            }
+
+            if (!groupName) {
+                mainLogger.debug(`Не был передан groupName`);
+                return;
+            }
+
+            if (!botToken) {
+                mainLogger.debug(`Не был передан botToken`);
+                return;
+            }
+
+            const linkedDeals: LinkedDealsInterface | null = await this.getLinkedDealByAppUserId(appUserId) || null;
+
+            if (!linkedDeals) {
                 await LinkedDealsModel.insertMany({
                     widgetUserId: appUserId,
                     linkedGroups: []
                 });
             }
-
-            const linkedDeals: LinkedDealsInterface | null = await this.getLinkedDealByAppUserId(appUserId) || null;
 
             const linkedGroups = linkedDeals?.linkedGroups.map((group) => {
                 if (group.telegramGroupId === groupId && !group.deals.some(lead => lead.id === deal.id)) {
@@ -357,36 +454,69 @@ class ManagerMongoDB {
         }
     }
 
-    async getLinkedDealByTelegramId(telegramId: number): Promise<LinkedGroups | null | void> {
+    async getLinkedDealByTelegramId(telegramId: number): Promise<LinkedGroups | null> {
         try {
+            if (!telegramId) {
+                mainLogger.debug(`Не был передан telegramId`);
+                return null;
+            }
+
             const linkedDeal: LinkedDealsInterface | null = await LinkedDealsModel.findOne({ 'linkedGroups.telegramGroupId': telegramId });
 
             if (linkedDeal) {
-                return linkedDeal.linkedGroups.find((linkedGroup) => linkedGroup.telegramGroupId === telegramId);
+                return linkedDeal.linkedGroups.find((linkedGroup) => linkedGroup.telegramGroupId === telegramId) || null;
             }
-
         } catch (error: unknown) {
             mainLogger.debug(`Произошла ошибка во время поиска связанных сделок!`);
             errorHandlingByType(error);
         }
+
         return null;
     }
 
     async getContactByTelegramId(telegramId: number): Promise<LinkedContact | null> {
         try {
+            if (!telegramId) {
+                mainLogger.debug(`Не был передан telegramId`);
+                return null;
+            }
+
             const contact: LinkedContact | null = await LinkedContactsModel.findOne({ 'linkedContact.telegramUserId': telegramId });
+
             if (contact) {
                 return contact;
             }
+
         } catch (error: unknown) {
             mainLogger.debug(`Произошла ошибка во привязки сделки к группе!`);
             errorHandlingByType(error);
         }
+
         return null;
     }
 
     async linkContact(appUserId: number, amoCRMContactId: number, telegramUserId: number, telegramName: string): Promise<void> {
         try {
+            if (!appUserId) {
+                mainLogger.debug(`Не был передан appUserId`);
+                return;
+            }
+
+            if (!amoCRMContactId) {
+                mainLogger.debug(`Не был передан amoCRMContactId`);
+                return;
+            }
+
+            if (!telegramUserId) {
+                mainLogger.debug(`Не был передан telegramUserId`);
+                return;
+            }
+
+            if (!telegramName) {
+                mainLogger.debug(`Не был передан telegramName`);
+                return;
+            }
+
             const linkedContacts = await this.getLinkedContactsByAppUserId(appUserId);
 
             const linkedContact = {
@@ -394,6 +524,7 @@ class ManagerMongoDB {
                 telegramUserId,
                 telegramName
             };
+
             await LinkedContactsModel.updateOne({ widgetUserId: appUserId }, {
                 $set: {
                     linkedContact: [...linkedContacts?.linkedContact || [], linkedContact]

@@ -282,18 +282,6 @@ class ClientApi extends Api {
 
         return res.data;
     });
-
-    addDeal: (deals: LeadData[]) => Promise<any> = this.authChecker(async (deals: LeadData[]) => {
-        const res = await axios.post(`${this.ROOT_URL}/api/v4/leads`, {
-            ...deals
-        }, {
-            headers: {
-                Authorization: `Bearer ${this.ACCESS_TOKEN}`
-            }
-        });
-
-        return res.data;
-    });
 }
 
 export default ClientApi;
