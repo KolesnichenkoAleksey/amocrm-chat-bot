@@ -52,6 +52,10 @@ class BotsState {
         }
     };
 
+    getBotByToken(botToken: string): BotState | null {
+        return this.bots.find(bot => bot.botToken === botToken) || null
+    }
+
 }
 
 export default new BotsState();

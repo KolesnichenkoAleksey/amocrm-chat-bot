@@ -1,16 +1,23 @@
+//=====================================================
 export interface DealInterface {
     name: string,
     id: number
 }
+//=====================================================
 
-export type LinkedGroups = {
+export type LinkedGroup = {
     telegramBotToken: string,
     telegramGroupId: number,
-    deals: DealInterface[]
+
+    //=====================================================
     telegramGroupName: string,
+    deals: DealInterface[]
+    amoChatIds: string[]
+    //=====================================================
+
 }
 
 export interface LinkedDealsInterface {
     widgetUserId: number,
-    linkedGroups: LinkedGroups[]
+    linkedGroups: LinkedGroup[]
 }

@@ -1,13 +1,49 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { StatusCodes } from '../consts/statusCodes';
 import { ApiError } from '../error/ApiError';
 import { getUserLogger, mainLogger } from '../components/logger/logger';
-import { TypedRequestConnectChat } from '../@types/express-custom/RequestChat';
+import { TypedRequestChatNewMessage, TypedRequestConnectChat } from '../@types/express-custom/RequestChat';
 import mongoManager from '../components/mongo/MongoManager';
+import BotsState from '../state/BotsState';
 
 class ChatChannelController {
-    async sendMessage(req: Request, res: Response, next: NextFunction) {
+    async sendMessage(req: TypedRequestChatNewMessage, res: Response, next: NextFunction) {
         try {
+            //=================================================================================
+            const newMessageBody = req.body
+            const scopeId = req.params.scope_id
+
+            if (!newMessageBody) {
+                return next(ApiError.badRequest('Не были полученны данные о сообщении!'));
+            }
+
+            if (!scopeId) {
+                return next(ApiError.badRequest('Не был передан scopeId!'));
+            }
+            
+            console.log(scopeId);
+            console.log(newMessageBody);
+            const chatId = newMessageBody.message.conversation.id;
+            const text = newMessageBody.message.message.text;
+
+            if (!text) {
+                return next(ApiError.badRequest('Не было передано сообщение!'));
+            }
+
+            const appUser = await mongoManager.getWidgetUserByScopeId(scopeId);
+            if (!appUser) {
+                return next(ApiError.badRequest('Не найден пользователь амо!'));
+            }
+            const tgGroup = await mongoManager.getTgGroupByChatId(appUser.accountId, chatId);
+            if (tgGroup) {
+                const bot = BotsState.getBotByToken(tgGroup.telegramBotToken)
+                if (bot && bot.botInstance) {
+                    await bot.botInstance.sendMessage(tgGroup.telegramGroupId, text)
+                }
+            }
+
+            //=================================================================================
+            
             return res.status(StatusCodes.Ok.Code).json({ message: `${Date.now()}` });
         } catch (error: unknown) {
 

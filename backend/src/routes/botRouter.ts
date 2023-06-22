@@ -9,8 +9,13 @@ router.get('/getLinkedGroups', botController.getLinkedGroups)
 router.post('/addBot', botController.addBot)
 router.patch('/deleteBot', botController.deleteBot)
 
-router.post('/getAllBots', botController.getAllBotsByAccountId) // with linked groups
-router.patch('/changePipeline', botController.changePipeline)
+//==========================================================================================
+router.post('/getAllBots', botController.getAllBotsByAccountId)
 router.patch('/unlinkDeal', botController.unlinkDeal)
+
+
+router.post('/getTgGroupNameByChatId', botController.getTgGroupNameByChatId)
+router.patch('/changePipeline', botController.changePipeline)
+
 
 export { router as botRouter };

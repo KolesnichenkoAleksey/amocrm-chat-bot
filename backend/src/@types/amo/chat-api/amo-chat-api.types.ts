@@ -26,10 +26,10 @@ export type ChatApiDisconnectBody = {
 
 type SendMessagePayloadSender = {
     'id': string,
-    'avatar'?: string,
-    'profile'?: object,
-    'profile_link'?: string,
-    'name'?: string
+    'avatar': string,
+    'profile': object,
+    'profile_link': string,
+    'name': string
 }
 
 type SendMessagePayloadMessage = {
@@ -50,4 +50,23 @@ type SendMessagePayload = {
 export type ChatApiSendMessageBody = {
     'event_type': string,
     'payload': SendMessagePayload
+}
+
+//=================================================================================
+//=================================================================================
+//=================================================================================
+
+export type ChatApiSource = {
+    'external_id': string
+}
+
+export type ChatApiCreateChatBody = {
+    'conversation_id': string,
+    'source': ChatApiSource,
+    'user': SendMessagePayloadSender
+}
+
+export type ChatApiNewChat = {
+    'id': string,
+    'user': SendMessagePayloadSender
 }

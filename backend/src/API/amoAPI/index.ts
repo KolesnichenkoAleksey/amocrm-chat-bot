@@ -6,17 +6,19 @@ import { getUserLogger } from '../../components/logger/logger';
 import {
     AmoAccount,
     AmoBodyError,
-    Api, CreatedContact, CreatedContactResponse,
-    IParamsClientApi, LeadData,
+    Api,
+    IParamsClientApi,
     SuccessTokenResponse
 } from '../../@types/amo/api/amo-api.types';
 import { StatusCodes } from '../../consts/statusCodes';
 import { TokenTypes } from '../../consts/TokenTypes';
 import mongoManager from '../../components/mongo/MongoManager';
-import { UserInterface } from '../../@types/models/UserInterface';
+import { AmoChatSourceInterface, UserInterface } from '../../@types/models/UserInterface';
 import dayjs from 'dayjs';
 import { Logger } from 'log4js';
 import amoChatAPI from '../amoChatAPI';
+import { v4 as uuidv4 } from 'uuid';
+
 
 dotenv.config({
     path: path.resolve(__dirname, '..', '..', '..', `${process.env.NODE_ENV}.env`)
@@ -223,6 +225,8 @@ class ClientApi extends Api {
                 async (err: AxiosError<AmoBodyError>) => {
                     const errorBody = err.response ? err.response.data : null;
                     this.logger.error(err.response?.data);
+                    console.log(err);
+                    
 
                     if (errorBody && 'validation-errors' in errorBody) {
                         errorBody['validation-errors'].forEach((element) =>
@@ -262,26 +266,206 @@ class ClientApi extends Api {
         return res.data;
     });
 
-    getDeal: (dealId: number) => Promise<LeadData> = this.authChecker(async (dealId: number) => {
+    //================================================================================================
+    //================================================================================================
+    //================================================================================================
+    //================================================================================================
+    //================================================================================================
+    //================================================================================================
+
+
+    getDealName: (dealId: number) => Promise<string> = this.authChecker(async (dealId: number) => {
         const res = await axios.get(`${this.ROOT_URL}/api/v4/leads/${dealId}`, {
             headers: {
                 Authorization: `Bearer ${this.ACCESS_TOKEN}`
             }
-        });
-        return res.data;
-    });
+        })
+        return res.data.name;
+    })
 
-    addContact: (contacts: CreatedContact[]) => Promise<CreatedContactResponse> = this.authChecker(async (contacts: CreatedContact[]) => {
-        const res = await axios.post(`${this.ROOT_URL}/api/v4/contacts`, {
-            ...contacts
-        }, {
-            headers: {
-                Authorization: `Bearer ${this.ACCESS_TOKEN}`
+    getSources: () => Promise<void> = this.authChecker(async () => {
+        try {            
+            const res = await axios.get(`${this.ROOT_URL}/api/v4/sources`, {
+                headers: {
+                    Authorization: `Bearer ${this.ACCESS_TOKEN}`
+                }
+            })
+            console.log(res.data._embedded.sources);
+            
+        } catch (error: unknown) {
+            if (error instanceof AxiosError) {
+                console.log(error?.response?.data['validation-errors'][0].errors || error?.response?.data);         
             }
-        });
+        }
+    })
 
-        return res.data;
-    });
+    addSource: (pipeline_id: number, botName: string) => Promise<AmoChatSourceInterface | null> = this.authChecker(async (pipeline_id: number, botName: string) => {
+        try {
+            const res = await axios.post(
+                `${this.ROOT_URL}/api/v4/sources`,
+                [{
+                    name:`reon-tg-chat-${botName}`,
+                    external_id: uuidv4(),
+                    pipeline_id: pipeline_id,
+                }],
+                {
+                    headers: {
+                        Authorization: `Bearer ${this.ACCESS_TOKEN}`
+                    }
+                }
+            );
+            return res.data._embedded.sources[0];
+            
+        } catch (error: unknown) {
+            if (error instanceof AxiosError) {
+                console.log('Error adding source');
+                console.log(error?.response?.data['validation-errors'][0].errors || error?.response?.data);         
+            }
+        }
+        return null;
+    })
+
+    editSource: (newSource: {id: number, pipeline_id: number}) => Promise<AmoChatSourceInterface | null> = this.authChecker(async (newSource: {id: number, pipeline_id: number}) => {
+        try {
+            const res = await axios.patch(
+                `${this.ROOT_URL}/api/v4/sources`,
+                [
+                    newSource
+                ],
+                {
+                    headers: {
+                        Authorization: `Bearer ${this.ACCESS_TOKEN}`
+                    }
+                }
+            );
+            
+            return res.data._embedded.sources[0];
+        } catch (error: unknown) {
+            if (error instanceof AxiosError) {
+                console.log('Error editing source');
+                console.log(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
+            }
+        }
+        return null;
+    })
+
+    // delSource: (sourceId: number) => Promise<void> = this.authChecker(async (sourceId: number) => {
+    //     try {
+    //         await axios.delete(
+    //             `${this.ROOT_URL}/api/v4/sources/${sourceId}`,
+    //             {
+    //                 headers: {
+    //                     Authorization: `Bearer ${this.ACCESS_TOKEN}`
+    //                 }
+    //             }
+    //         );
+            
+    //     } catch (error: unknown) {
+    //         if (error instanceof AxiosError) {
+    //             console.log('Error deleting source');
+    //             console.log(error?.response?.data['validation-errors'][0].errors || error?.response?.data);         
+    //         }           
+    //     }
+    // })
+
+    delSource: (sources: AmoChatSourceInterface[]) => Promise<void> = this.authChecker(async (sources: AmoChatSourceInterface[]) => {
+        try {
+            await axios.delete(
+                `${this.ROOT_URL}/api/v4/sources`,
+                {
+                    data: sources.map(source => ({id: source.id})),
+                    headers: {
+                        Authorization: `Bearer ${this.ACCESS_TOKEN}`
+                    }
+                }
+            );
+
+        } catch (error: unknown) {
+            if (error instanceof AxiosError) {
+                console.log('Error deleting source');
+                console.log(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
+            }
+        }
+    })
+
+    createContact: (contactName: string) => Promise<number | null> = this.authChecker(async (contactName: string) => {
+        try {
+            const res = await axios.post(
+                `${this.ROOT_URL}/api/v4/contacts`,
+                [
+                    {
+                        name: contactName
+                    }
+                ],
+                {
+                    headers: {
+                        Authorization: `Bearer ${this.ACCESS_TOKEN}`
+                    }
+                }
+            )
+            
+            return res.data._embedded.contacts[0].id || null;
+            
+        } catch (error: unknown) {
+            if (error instanceof AxiosError) {
+                console.log('Error creating contact');
+                console.log(error?.response?.data['validation-errors'][0].errors || error?.response?.data);         
+            }
+            return null;
+        }
+    })
+
+    linkContactToLead: (leadId: number, contactId: number) => Promise<void> = this.authChecker(async (leadId: number, contactId: number) => {
+        try {
+            await axios.post(
+                `${this.ROOT_URL}/api/v4/leads/${leadId}/link`,
+                [
+                    {
+                        to_entity_id: contactId,
+                        to_entity_type: 'contacts'
+                    }
+                ],
+                {
+                    headers: {
+                        Authorization: `Bearer ${this.ACCESS_TOKEN}`
+                    }
+                }
+            );
+            
+        } catch (error: unknown) {
+            if (error instanceof AxiosError) {
+                console.log('Error linking contact to lead'); 
+                console.log(error?.response?.data['validation-errors'][0].errors || error?.response?.data);         
+            }          
+        }
+    })
+
+    linkChatToContact: (chat_id: string, contact_id: number) => Promise<void> = this.authChecker(async (chat_id: string, contact_id: number) => {
+        try {
+            const res = await axios.post(
+                `${this.ROOT_URL}/api/v4/contacts/chats`,
+                [
+                    {
+                        contact_id,
+                        chat_id,
+                    }
+                ],
+                {
+                    headers: {
+                        Authorization: `Bearer ${this.ACCESS_TOKEN}`
+                    }
+                }
+            );
+            // console.log(res.data?._embedded?.chats[0]);
+            
+        } catch (error: unknown) {
+            if (error instanceof AxiosError) {
+                console.log('Error linking chat to contact');
+                console.log(error?.response?.data?.['validation-errors']?.[0]?.errors || error?.response?.data);         
+            }          
+        }
+    })
+
 }
 
 export default ClientApi;

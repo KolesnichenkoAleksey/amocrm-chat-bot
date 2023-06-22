@@ -1,6 +1,18 @@
 import {model, Schema} from 'mongoose';
 import {LinkedDealsInterface} from "../@types/models/LinkedDealsInterface";
 
+// const LinkedDealsModel = new Schema<LinkedDealsInterface>({
+//     widgetUserId: {type: Number, require: true},
+//     linkedGroups: {
+//         type: Array({
+//             telegramBotToken: {type: String, require: true},
+//             telegramGroupId: {type: Number, require: true},
+//             dealsIds: {type: [Number], require: true}
+//         }),
+//         require: true
+//     },
+// });
+
 const LinkedDealsModel = new Schema<LinkedDealsInterface>({
     widgetUserId: {type: Number, require: true},
     linkedGroups: {
@@ -8,6 +20,9 @@ const LinkedDealsModel = new Schema<LinkedDealsInterface>({
             telegramBotToken: {type: String, require: true},
             telegramGroupId: {type: Number, require: true},
             telegramGroupName: {type: String, require: true},
+            //================================================
+            amoChatIds: [{ type: String }],
+            //================================================
             deals: [{
                 type: Object({
                     id: {type: Number, require: true},

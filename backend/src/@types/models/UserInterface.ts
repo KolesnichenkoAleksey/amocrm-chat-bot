@@ -3,9 +3,20 @@ export interface PipelineInterface {
     name: string,
 }
 
+//================================================
+export interface AmoChatSourceInterface {
+    id: number,
+    name: string,
+    external_id: string,
+}
+//================================================
+
 export type InitializingBot = {
     botToken: string;
     botName: string;
+    //================================================
+    amoChatsSource: AmoChatSourceInterface,
+    //================================================
     pipeline: PipelineInterface;
 }
 

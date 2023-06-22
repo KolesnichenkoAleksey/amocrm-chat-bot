@@ -1,4 +1,4 @@
-import { Response, NextFunction, Request } from 'express';
+import { Response, NextFunction } from 'express';
 import { StatusCodes } from '../consts/statusCodes';
 import { ApiError } from '../error/ApiError';
 import { getUserLogger, mainLogger } from '../components/logger/logger';
@@ -8,97 +8,112 @@ import telegramAPI from '../API/telegramAPI';
 import mongoManager from '../components/mongo/MongoManager';
 import { InitializingBot, UserInterface } from '../@types/models/UserInterface';
 import {
-    TypedRequestAddBot, TypedRequestChangePipeline,
+    TypedRequestAddBot,
+    TypedRequestChangePipeline,
     TypedRequestDeleteBot,
-    TypedRequestGetAllBot, TypedRequestGetAllBotByAccountId, TypedRequestGetAllLinkedGroups,
-    TypedRequestGetByAccountBot, TypedRequestUnlinkDeal
+    TypedRequestGetAllBot, 
+    TypedRequestGetAllBotByAccountId, 
+    TypedRequestGetAllLinkedGroups,
+    TypedRequestGetByAccountBot,
+    TypedRequestUnlinkDeal,
+    TypeGetTgGroupNameByChatId
 } from '../@types/express-custom/RequestBot';
+import ClientApi from '../API/amoAPI';
 
 class BotController {
-    async addBot(req: TypedRequestAddBot, res: Response, next: NextFunction) {
-        try {
-            const subdomain = req.body.subdomain || undefined;
+    // async addBot(req: TypedRequestAddBot, res: Response, next: NextFunction) {
+    //     try {
+    //         const subdomain = req.body.subdomain || undefined;
 
-            if (!subdomain) {
-                mainLogger.debug('Не был передан SubDomain!');
-                return next(ApiError.badRequest('Не был передан SubDomain!'));
-            }
+    //         if (!subdomain) {
+    //             mainLogger.debug('Не был передан SubDomain!');
+    //             return next(ApiError.badRequest('Не был передан SubDomain!'));
+    //         }
 
-            const userLogger = getUserLogger(subdomain);
+    //         const userLogger = getUserLogger(subdomain);
 
-            const botToken = req.body.botToken || undefined;
+    //         const botToken = req.body.botToken || undefined;
 
-            if (!botToken) {
-                userLogger.debug('Не был передан botToken!');
-                return next(ApiError.badRequest('Не был передан botToken!'));
-            }
+    //         if (!botToken) {
+    //             userLogger.debug('Не был передан botToken!');
+    //             return next(ApiError.badRequest('Не был передан botToken!'));
+    //         }
 
-            const pipeline = req.body.pipeline || undefined;
+    //         const pipeline = req.body.pipeline || undefined;
 
-            if (!pipeline) {
-                userLogger.debug('Не был передан pipelineId!');
-                return next(ApiError.badRequest('Не был передан pipelineId!'));
-            }
+    //         if (!pipeline) {
+    //             userLogger.debug('Не был передан pipelineId!');
+    //             return next(ApiError.badRequest('Не был передан pipelineId!'));
+    //         }
 
-            const newBotToState = {
-                botToken,
-                botInstance: new Bot(botToken)
-            };
+    //         const newBotToState = {
+    //             botToken,
+    //             botInstance: new Bot(botToken)
+    //         };
 
-            const { username: botName } = await telegramAPI.getMe(botToken) || { username: null };
+    //         const { username: botName } = await telegramAPI.getMe(botToken) || { username: null };
 
-            if (!botName) {
-                userLogger.debug('Не был удалось получить информацию о боте, возможно проблема в токене!');
-                return next(ApiError.notFound('Не был удалось получить информацию о боте, возможно проблема в токене!'));
-            }
+    //         if (!botName) {
+    //             userLogger.debug('Не был удалось получить информацию о боте, возможно проблема в токене!');
+    //             return next(ApiError.notFound('Не был удалось получить информацию о боте, возможно проблема в токене!'));
+    //         }
 
-            const appUser: UserInterface | null = await mongoManager.getWidgetUserBySubdomain(subdomain);
+    //         const appUser: UserInterface | null = await mongoManager.getWidgetUserBySubdomain(subdomain);
 
-            if (!appUser) {
-                userLogger.debug('Не удалось получить пользователя виджета!');
-                return next(ApiError.notFound('Не удалось получить пользователя виджета!'));
-            }
+    //         if (!appUser) {
+    //             userLogger.debug('Не удалось получить пользователя виджета!');
+    //             return next(ApiError.notFound('Не удалось получить пользователя виджета!'));
+    //         }
 
-            const isExistLinkedBot = !!appUser.initializingBots.find((botInfo: InitializingBot) => botInfo.botToken === botToken);
+    //         const isExistLinkedBot = !!appUser.initializingBots.find((botInfo: InitializingBot) => botInfo.botToken === botToken);
 
-            if (isExistLinkedBot) {
-                userLogger.debug(`Бот с токеном ${botToken} уже привязан к аккаунту клиента`);
-                return next(ApiError.notFound(`Бот с токеном ${botToken} уже привязан к аккаунту клиента`));
-            }
+    //         if (isExistLinkedBot) {
+    //             userLogger.debug(`Бот с токеном ${botToken} уже привязан к аккаунту клиента`);
+    //             return next(ApiError.notFound(`Бот с токеном ${botToken} уже привязан к аккаунту клиента`));
+    //         }
 
-            const addedBot = {
-                botToken,
-                botName,
-                pipeline
-            };
+    //         const api = new ClientApi({subDomain: appUser.widgetUserSubdomain, accountId: appUser.accountId});
+    //         const newSource = await api.addSource(pipeline.id, botName)
 
-            await mongoManager.updateUser({ ...appUser, initializingBots: [...appUser.initializingBots, addedBot] });
+    //         if (!newSource) {
+    //             userLogger.debug(`Неудалось создать источник для сделок в воронке`);
+    //             return next(ApiError.internal(`Неудалось создать источник для сделок в воронке`));
+    //         }
 
-            newBotToState.botInstance.startListeners().launchInstance().then();
+    //         const addedBot: InitializingBot = {
+    //             botToken,
+    //             botName,
+    //             pipeline,
+    //             amoChatsSource: newSource,
+    //         };
 
-            botsState.setBots([...botsState.getBots(), newBotToState]);
+    //         await mongoManager.updateUser({ ...appUser, initializingBots: [...appUser.initializingBots, addedBot] });
 
-            userLogger.debug(`Bot with token ${botToken} has been started`);
+    //         newBotToState.botInstance.startListeners().launchInstance().then();
 
-            const bot = await mongoManager.getBotBySubdomainAndToken(subdomain, botToken);
+    //         botsState.setBots([...botsState.getBots(), newBotToState]);
 
-            return res.status(StatusCodes.Ok.Code).json({
-                message: StatusCodes.Ok.DefaultMessage,
-                bot
-            });
+    //         userLogger.debug(`Bot with token ${botToken} has been started`);
 
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                mainLogger.debug(error.message);
-                next(ApiError.internal(error.message));
-            }
+    //         const bot = await mongoManager.getBotBySubdomainAndToken(subdomain, botToken);
 
-            if (typeof error === 'string') {
-                mainLogger.debug(error);
-                next(ApiError.internal(error));
-            }
-        }
-    }
+    //         return res.status(StatusCodes.Ok.Code).json({
+    //             message: StatusCodes.Ok.DefaultMessage,
+    //             bot
+    //         });
+
+    //     } catch (error: unknown) {
+    //         if (error instanceof Error) {
+    //             mainLogger.debug(error.message);
+    //             next(ApiError.internal(error.message));
+    //         }
+
+    //         if (typeof error === 'string') {
+    //             mainLogger.debug(error);
+    //             next(ApiError.internal(error));
+    //         }
+    //     }
+    // }
 
     async getBotsByAccount(req: TypedRequestGetByAccountBot, res: Response, next: NextFunction) {
         try {
@@ -166,42 +181,6 @@ class BotController {
         }
     }
 
-    async deleteBot(req: TypedRequestDeleteBot, res: Response, next: NextFunction) {
-        try {
-            const subdomain = req.body.subdomain || undefined;
-
-            if (!subdomain) {
-                mainLogger.debug('Не был передан SubDomain!');
-                return next(ApiError.badRequest('Не был передан SubDomain!'));
-            }
-
-            const userLogger = getUserLogger(subdomain);
-
-            const botTokens = req.body.botTokens || undefined;
-
-            if (!botTokens || !botTokens.length) {
-                userLogger.debug('Не были переданы токены бота/ботов');
-                return next(ApiError.badRequest('Не были переданы токены бота/ботов'));
-            }
-
-            await mongoManager.deleteBots(subdomain, botTokens);
-
-            userLogger.debug('Удаление ботов произошло успешно');
-            return res.status(StatusCodes.Ok.Code).json({ message: 'Удаление бота/ботов прошло успешно' });
-
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                mainLogger.debug(error.message);
-                next(ApiError.internal(error.message));
-            }
-
-            if (typeof error === 'string') {
-                mainLogger.debug(error);
-                next(ApiError.internal(error));
-            }
-        }
-    }
-
     async getLinkedGroups(req: TypedRequestGetAllLinkedGroups, res: Response, next: NextFunction) {
         try {
             const subdomain = req.query.subdomain || undefined;
@@ -228,6 +207,18 @@ class BotController {
         }
     }
 
+    
+    //================================================================================================
+    //================================================================================================
+    //================================================================================================
+    //================================================================================================
+    //================================================================================================
+    //================================================================================================
+    //================================================================================================
+    //================================================================================================
+
+
+
     async getAllBotsByAccountId(req: TypedRequestGetAllBotByAccountId, res: Response, next: NextFunction) {
         try {
             const accountId = req.query.accountId || undefined;
@@ -240,59 +231,21 @@ class BotController {
             const initializingBots = await mongoManager.getAllBotsByAccountId(accountId);
 
             if (!initializingBots) {
-                mainLogger.debug(`У пользователя c id ${accountId} нету ботов!`);
-                return next(ApiError.notFound(`У пользователя c id ${accountId} нету ботов!`));
+                mainLogger.debug(`У пользователя ${accountId} нету ботов!`);
+                return next(ApiError.notFound(`У пользователя ${accountId} нету ботов!`));
             }
 
-            const bots = [];
+            const bots = []
 
             for (const bot of initializingBots) {
-                const relatedTgGroups = await mongoManager.getBotTgGroups(accountId, bot.botToken);
-                if (relatedTgGroups) {
-                    bots.push({
-                        ...bot,
-                        relatedTgGroups
-                    });
-                }
-            }
+                const relatedTgGroups =  await mongoManager.getBotTgGroups(accountId, bot.botToken);
+                bots.push({
+                    ...bot,
+                    relatedTgGroups: relatedTgGroups.filter(group => group.telegramGroupId < 0)
+                });
+            }            
 
             return res.status(StatusCodes.Ok.Code).json(bots);
-
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                mainLogger.debug(error.message);
-                next(ApiError.internal(error.message));
-            }
-
-            if (typeof error === 'string') {
-                mainLogger.debug(error);
-                next(ApiError.internal(error));
-            }
-        }
-    }
-
-    async changePipeline(req: TypedRequestChangePipeline, res: Response, next: NextFunction) {
-        try {
-            const { accountId, botToken, pipeline } = req.body;
-
-            if (!accountId) {
-                mainLogger.debug('Не был передан accountId!');
-                return next(ApiError.badRequest('Не был передан accountId!'));
-            }
-
-            if (!botToken) {
-                mainLogger.debug('Не был передан botToken!');
-                return next(ApiError.badRequest('Не был передан botToken!'));
-            }
-
-            if (!pipeline) {
-                mainLogger.debug('Не был передан pipeline!');
-                return next(ApiError.badRequest('Не был передан pipeline!'));
-            }
-
-            await mongoManager.changePipeline(accountId, botToken, pipeline);
-
-            return res.status(StatusCodes.Ok.Code).json({ message: 'Изменение воронки прошло успешно' });
 
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -331,9 +284,131 @@ class BotController {
                 return next(ApiError.badRequest('Не был передан pipeline!'));
             }
 
-            await mongoManager.unlinkDeal(accountId, botToken, groupId, dealId);
+            await mongoManager.unlinkDeal(accountId, botToken, groupId, dealId)
 
             return res.status(StatusCodes.Ok.Code).json({ message: 'Сделка успешно отвязана' });
+
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                mainLogger.debug(error.message);
+                next(ApiError.internal(error.message));
+            }
+
+            if (typeof error === 'string') {
+                mainLogger.debug(error);
+                next(ApiError.internal(error));
+            } 
+        }
+    }
+
+    async getTgGroupNameByChatId(req: TypeGetTgGroupNameByChatId, res: Response, next: NextFunction) {
+        const { accountId, chatId } = req.body;
+
+        if (!accountId) {
+            mainLogger.debug('Не был передан accountId!');
+            return next(ApiError.badRequest('Не был передан accountId!'));
+        }
+
+        if (!chatId) {
+            mainLogger.debug('Не был передан chatId!');
+            return next(ApiError.badRequest('Не был передан chatId!'));
+        }
+
+        const tgGroup = await mongoManager.getTgGroupByChatId(accountId, chatId);
+
+        return res.status(StatusCodes.Ok.Code).json({
+            message: StatusCodes.Ok.DefaultMessage,
+            tgGroupName: tgGroup?.telegramGroupName
+        });
+    }
+
+    async addBot(req: TypedRequestAddBot, res: Response, next: NextFunction) {
+        try {
+            const accountId = req.body.accountId || undefined;
+
+            if (!accountId) {
+                mainLogger.debug('Не был передан accountId!');
+                return next(ApiError.badRequest('Не был передан accountId!'));
+            }
+
+            const appUser: UserInterface | null = await mongoManager.getWidgetUserByAccountId(accountId);
+
+            if (!appUser) {
+                return next(ApiError.notFound('Не удалось получить пользователя виджета!'));
+            }
+
+            const userLogger = getUserLogger(appUser.widgetUserSubdomain);
+
+            const botToken = req.body.botToken || undefined;
+
+            if (!botToken) {
+                userLogger.debug('Не был передан botToken!');
+                return next(ApiError.badRequest('Не был передан botToken!'));
+            }
+
+            const pipeline = req.body.pipeline || undefined;
+
+            if (!pipeline) {
+                userLogger.debug('Не был передан pipelineId!');
+                return next(ApiError.badRequest('Не был передан pipelineId!'));
+            }
+
+            const newBotToState = {
+                botToken,
+                botInstance: new Bot(botToken)
+            };
+
+            const { username: botName } = await telegramAPI.getMe(botToken) || { username: null };
+
+            if (!botName) {
+                userLogger.debug('Не удалось получить информацию о боте, возможно проблема в токене!');
+                return next(ApiError.notFound('Не удалось получить информацию о боте, возможно проблема в токене!'));
+            }
+
+            const isExistLinkedBot = !!appUser.initializingBots.find((botInfo: InitializingBot) => botInfo.botToken === botToken);
+
+            if (isExistLinkedBot) {
+                userLogger.debug(`Бот с токеном ${botToken} уже привязан к аккаунту клиента`);
+                return next(ApiError.notFound(`Бот с токеном ${botToken} уже привязан к аккаунту клиента`));
+            }
+
+            // ==============================================================================
+            // ==============================================================================
+            // ==============================================================================
+
+            const api = new ClientApi({subDomain: appUser.widgetUserSubdomain, accountId});
+            const newSource = await api.addSource(pipeline.id, botName)
+
+            if (!newSource) {
+                userLogger.debug(`Неудалось создать источник для сделок в воронке`);
+                return next(ApiError.internal(`Неудалось создать источник для сделок в воронке`));
+            }
+
+            const addedBot: InitializingBot = {
+                botToken,
+                botName,
+                pipeline,
+                amoChatsSource: newSource,
+            };
+
+            // ==============================================================================
+            // ==============================================================================
+            // ==============================================================================
+
+            await mongoManager.updateUser({ ...appUser, initializingBots: [...appUser.initializingBots, addedBot] });
+
+            newBotToState.botInstance.startListeners().launchInstance().then();
+
+            botsState.setBots([...botsState.getBots(), newBotToState]);
+
+            userLogger.debug(`Bot with token ${botToken} has been started`);
+
+            const bot = await mongoManager.getBotBySubdomainAndToken(appUser.widgetUserSubdomain, botToken);
+
+            return res.status(StatusCodes.Ok.Code).json({
+                message: StatusCodes.Ok.DefaultMessage,
+                bot
+            });
 
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -347,6 +422,112 @@ class BotController {
             }
         }
     }
+
+    async changePipeline(req: TypedRequestChangePipeline, res: Response, next: NextFunction) {
+        try {
+            const { accountId, botToken, pipeline } = req.body;
+
+            if (!accountId) {
+                mainLogger.debug('Не был передан accountId!');
+                return next(ApiError.badRequest('Не был передан accountId!'));
+            }
+
+            if (!botToken) {
+                mainLogger.debug('Не был передан botToken!');
+                return next(ApiError.badRequest('Не был передан botToken!'));
+            }
+
+            if (!pipeline) {
+                mainLogger.debug('Не был передан pipeline!');
+                return next(ApiError.badRequest('Не был передан pipeline!'));
+            }
+
+            await mongoManager.changePipeline(accountId, botToken, pipeline);
+
+            //================================================================================================
+            const appUser = await mongoManager.getWidgetUserByBotToken(botToken);
+            if (!appUser) {
+                mainLogger.debug('Не найден аккаунт!');
+                return next(ApiError.badRequest('Не найден аккаунт!'));
+            }
+
+            const [bot] = appUser.initializingBots.filter(bot => bot.botToken === botToken);
+
+            if (!bot) {
+                mainLogger.debug('В аккаунет нет бота с таким token!');
+                return next(ApiError.badRequest('В аккаунет нет бота с таким token!'));
+            }
+
+            const api = new ClientApi({subDomain: appUser.widgetUserSubdomain, accountId});
+            await api.editSource({id: bot.amoChatsSource.id, pipeline_id: pipeline.id});
+            //================================================================================================
+
+            return res.status(StatusCodes.Ok.Code).json({ message: 'Изменение воронки прошло успешно' });
+
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                mainLogger.debug(error.message);
+                next(ApiError.internal(error.message));
+            }
+
+            if (typeof error === 'string') {
+                mainLogger.debug(error);
+                next(ApiError.internal(error));
+            }           
+        }
+    }
+
+    async deleteBot(req: TypedRequestDeleteBot, res: Response, next: NextFunction) {
+        try {
+            const subdomain = req.body.subdomain || undefined;
+
+            if (!subdomain) {
+                mainLogger.debug('Не был передан SubDomain!');
+                return next(ApiError.badRequest('Не был передан SubDomain!'));
+            }
+
+            const userLogger = getUserLogger(subdomain);
+
+            const botTokens = req.body.botTokens || undefined;
+
+            if (!botTokens || !botTokens.length) {
+                userLogger.debug('Не были переданы токены бота/ботов');
+                return next(ApiError.badRequest('Не были переданы токены бота/ботов'));
+            }
+
+            //=======================================================================
+            const bots = await mongoManager.getAllBotsBySubdomain(subdomain)
+            if (!bots || !bots.length) {
+                userLogger.debug('На аккаунте нет ботов');
+                return res.status(StatusCodes.Ok.Code).json({ message: 'На аккаунте нет ботов' });
+            }
+
+            const api = new ClientApi({ subDomain: subdomain });
+            const treatedToDeleteBotSources = bots.filter(bot => botTokens.includes(bot.botToken)).map(bot => bot.amoChatsSource)
+            if (treatedToDeleteBotSources && treatedToDeleteBotSources.length) {
+                await api.delSource(treatedToDeleteBotSources)
+            }
+
+            //=======================================================================
+
+            await mongoManager.deleteBots(subdomain, botTokens);
+
+            userLogger.debug('Удаление ботов произошло успешно');
+            return res.status(StatusCodes.Ok.Code).json({ message: 'Удаление бота/ботов прошло успешно' });
+
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                mainLogger.debug(error.message);
+                next(ApiError.internal(error.message));
+            }
+
+            if (typeof error === 'string') {
+                mainLogger.debug(error);
+                next(ApiError.internal(error));
+            }
+        }
+    }
+
 }
 
 export default new BotController();

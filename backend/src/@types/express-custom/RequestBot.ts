@@ -2,7 +2,7 @@ import { TypedRequestBody, TypedRequestQuery } from './CustomRequest';
 import { PipelineInterface } from '../models/UserInterface';
 
 export type TypedRequestAddBot = TypedRequestBody<{
-    subdomain: string,
+    accountId: number,
     botToken: string
     pipeline: PipelineInterface
 }>
@@ -24,6 +24,7 @@ export type TypedRequestDeleteBot = TypedRequestBody<{
     botTokens: string[]
 }>
 
+// ===========================================================================
 export type TypedRequestGetAllBotByAccountId = TypedRequestQuery<{
     accountId: number
 }>
@@ -34,9 +35,24 @@ export type TypedRequestChangePipeline = TypedRequestBody<{
     pipeline: PipelineInterface
 }>
 
-export type TypedRequestUnlinkDeal= TypedRequestBody<{
+export type TypedRequestUnlinkDeal = TypedRequestBody<{
     accountId: number,
     botToken: string,
     groupId: number,
     dealId: number
 }>
+
+export type TypeGetTgGroupNameByAmoContactId = TypedRequestBody<{
+    accountId: number,
+    amoContactId: number
+}>
+export type TypeGetDealTgGroupName = TypedRequestBody<{
+    accountId: number,
+    dealId: number
+}>
+
+export type TypeGetTgGroupNameByChatId = TypedRequestBody<{
+    accountId: number,
+    chatId: string
+}>
+// ===========================================================================
