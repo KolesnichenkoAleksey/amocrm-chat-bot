@@ -76,7 +76,7 @@ class BotController {
                 if (relatedTgGroups) {
                     bots.push({
                         ...bot,
-                        relatedTgGroups
+                        relatedTgGroups: relatedTgGroups.filter(group => group.telegramGroupId < 0)
                     });
                 }
             }
@@ -315,25 +315,28 @@ class BotController {
                 return next(ApiError.badRequest('Не был передан pipeline!'));
             }
 
-            await mongoManager.changePipeline(accountId, botToken, pipeline);
-
             const appUser = await mongoManager.getWidgetUserByBotToken(botToken);
             if (!appUser) {
                 mainLogger.debug('Не найден аккаунт!');
                 return next(ApiError.badRequest('Не найден аккаунт!'));
             }
-
+            
             const [bot] = appUser.initializingBots.filter(bot => bot.botToken === botToken);
-
+            
             if (!bot) {
                 mainLogger.debug('В аккаунет нет бота с таким token!');
                 return next(ApiError.badRequest('В аккаунет нет бота с таким token!'));
             }
-
+            
             const api = new ClientApi({ subDomain: appUser.widgetUserSubdomain, accountId });
+            
+            const editedSource = await api.editSource({ id: bot.amoChatsSource.id, pipelineId: pipeline.id });
+            console.log(editedSource);
+            if (!editedSource || editedSource.pipeline_id !== pipeline.id) {
+                return next(ApiError.internal('�� ������� �������� ������� ��� ���������!'))
+            }
 
-            await api.editSource({ id: bot.amoChatsSource.id, pipelineId: pipeline.id });
-
+            await mongoManager.changePipeline(accountId, botToken, pipeline);
             return res.status(StatusCodes.Ok.Code).json({ message: 'Изменение воронки прошло успешно' });
         } catch (error: unknown) {
             if (error instanceof Error) {

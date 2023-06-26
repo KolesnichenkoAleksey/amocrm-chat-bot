@@ -5,6 +5,8 @@ import { getUserLogger, mainLogger } from '../components/logger/logger';
 import { TypedRequestChatNewMessage, TypedRequestConnectChat } from '../@types/express-custom/RequestChat';
 import mongoManager from '../components/mongo/MongoManager';
 import BotsState from '../state/BotsState';
+import { LastMessageFromAMOInterface } from '../@types/models/LinkedDealsInterface';
+import Utils from '../components/utils/Utils';
 
 class ChatChannelController {
     async sendMessage(req: TypedRequestChatNewMessage, res: Response, next: NextFunction) {
@@ -35,10 +37,26 @@ class ChatChannelController {
 
             const tgGroup = await mongoManager.getTgGroupByChatId(appUser.accountId, chatId);
 
-            if (tgGroup) {
+            if (!tgGroup) {
+                return next(ApiError.badRequest('Не найдена связанная telegram группа!'));
+            }
+
+            const lastMessageFromAmo: LastMessageFromAMOInterface = {
+                senderId: newMessageBody.message.sender.id,
+                text: newMessageBody.message.message.text,
+                time: newMessageBody.time,
+            }
+
+            console.log(lastMessageFromAmo);
+            console.log(tgGroup.lastMessageFromAMO);
+            
+
+            if (!tgGroup.lastMessageFromAMO || Utils.isNOTAmoMessagesEquals(lastMessageFromAmo, tgGroup.lastMessageFromAMO)) {
                 const bot = BotsState.getBotByToken(tgGroup.telegramBotToken);
                 if (bot && bot.botInstance) {
                     await bot.botInstance.sendMessage(tgGroup.telegramGroupId, text);
+                    await mongoManager.editLastMessageFromAMO(appUser.accountId, tgGroup.telegramGroupId, lastMessageFromAmo);
+                    // запросы обрабатываются параллельно 
                 }
             }
 

@@ -7,6 +7,7 @@ import { Message, Update } from 'typegram';
 import MessageUpdate = Update.MessageUpdate;
 import ClientApi from '../../API/amoAPI';
 import TextMessage = Message.TextMessage;
+import Utils from '../utils/Utils';
 
 export class BotListeners {
 
@@ -29,7 +30,6 @@ export class BotListeners {
         botInstance.action('linkedDeal', this.linkedDealButtonAction);
     }
 
-    // on block
     private async textListener(ctx: Context<MessageUpdate<TextMessage>>, next: NextFunction): Promise<void> {
         try {
             if (ctx?.update?.message?.entities && ctx?.update?.message?.entities?.find((entity: { offset: number, length: number, type: string }) => entity.type === 'bot_command')) {
@@ -65,9 +65,9 @@ export class BotListeners {
                 )
             }
 
-            // поиск контакта у нас в бд
             const contactId = await mongoManager.getAmoContactIdByTgUserId(appUser.accountId, userTelegramId);
             const api = new ClientApi({subDomain: appUser.widgetUserSubdomain, accountId: appUser.accountId});
+            let amoContactId = contactId;
 
             if (!contactId) {
                 const newContactId = await api.createContact(userName)
@@ -79,37 +79,55 @@ export class BotListeners {
                             telegramUserId: userTelegramId
                         }
                     )
+                    amoContactId = newContactId
+                }
+                await new Promise(res => setTimeout(res, 1000));
+            } 
+            
+            if (contactId) {
+                const isContactInAmo = await api.isAmoContactIdValid(contactId);
+
+                // не получается привязать существующий чат к контакту удаленному из амо потому что чат уже привязан
+                // можно пытаться получить историю чата и если она есть то не создавать контакт если вернут ошибку то создавать
+                const isChatHistoryExist = await amoChatAPI.getChatHistory(appUser.amojoScopeId, `reon-${Utils.hashFunction(String(groupId) + String(userTelegramId))}`);
+                console.log(isChatHistoryExist);
+                
+                if (!isContactInAmo && !isChatHistoryExist) {
+                    const newContactId = await api.createContact(userName)
+                    if (newContactId) {
+                        await mongoManager.editContactAmoId(appUser.accountId, contactId, newContactId);
+                        amoContactId = newContactId;
+                    }
+                    await new Promise(res => setTimeout(res, 1000));
                 }
             }
-
-            const amoContactId = await mongoManager.getAmoContactIdByTgUserId(appUser.accountId, userTelegramId);
+            
             const [bot] = appUser.initializingBots.filter(bot => bot.botToken === telegramToken);
 
-            const newChat = await amoChatAPI.createChat(appUser.amojoScopeId, userTelegramId, groupId, bot.amoChatsSource.external_id, userName + 'Group');
+            const newChat = await amoChatAPI.createChat(appUser.amojoScopeId, userTelegramId, groupId, bot.amoChatsSource.external_id, userName);
+
             if (newChat && amoContactId) {
                 await mongoManager.addAmoChatByTgGroupId(appUser.accountId, groupId, newChat.id);
 
                 await api.linkChatToContact(newChat.id, amoContactId);
-                await new Promise(res => setTimeout(res, 1000))
+                await new Promise(res => setTimeout(res, 1000));
 
                 const groupDeals = await mongoManager.getGroupDeals(appUser.accountId, groupId)
                 if (groupDeals) {
                     for (const deal of groupDeals) {
-                        await api.linkContactToLead(deal.id, amoContactId);
+                        api.linkContactToLead(deal.id, amoContactId);
                     }
                     await new Promise(res => setTimeout(res, 1000));
                 }
 
                 await amoChatAPI.sendMessage(appUser.amojoScopeId, userTelegramId, groupId, messageText, userName);
             }
-
             await ctx.reply('Hello!');
         } catch (error: unknown) {
             return errorHandlingByType(error);
         }
     };
 
-    // command block
     private menuCommandAction(menuCommandContext: Context<any>) {
         return menuCommandContext.replyWithHTML('Управление ботом', {
             ...Markup.inlineKeyboard([

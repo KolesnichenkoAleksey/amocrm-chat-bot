@@ -8,6 +8,7 @@ import LinkedDealsModel from '../../models/linkedDealsModel';
 import LinkedContactsModel from '../../models/linkedContactsModel';
 import {
     DealInterface,
+    LastMessageFromAMOInterface,
     LinkedDealsInterface,
     LinkedGroup,
 } from '../../@types/models/LinkedDealsInterface';
@@ -560,9 +561,9 @@ class ManagerMongoDB {
             );
 
             if (foundContacts) {
-                const [{ amoCRMContactId }] = foundContacts.linkedContact.filter(contact => contact.telegramUserId === telegramUserId);
+                const [contact] = foundContacts.linkedContact.filter(contact => contact.telegramUserId === telegramUserId);
 
-                return amoCRMContactId || null;
+                return contact ? contact.amoCRMContactId : null;
             }
 
         } catch (error) {
@@ -667,6 +668,36 @@ class ManagerMongoDB {
         }
 
         return null;
+    }
+
+    async editContactAmoId(accountId: number, oldId: number, newId: number): Promise<void> {
+        try {
+            await LinkedContactsModel.updateOne({ widgetUserId: accountId, },
+                {'linkedContact.$[contact].amoCRMContactId': newId},
+                {
+                    arrayFilters: [{ 'contact.amoCRMContactId': oldId }]
+                }
+            );
+
+        } catch (error) {
+            mainLogger.debug(`Произошла изменения amoContactId`);
+            errorHandlingByType(error);
+        }
+    }
+
+    async editLastMessageFromAMO(accountId: number, tgGroupId: number, lastMessage: LastMessageFromAMOInterface): Promise<void> {
+        try {
+            await LinkedDealsModel.updateOne({ widgetUserId: accountId, },
+                {'linkedGroups.$[group].lastMessageFromAMO': lastMessage},
+                {
+                    arrayFilters: [{ 'group.telegramGroupId': tgGroupId }],
+                },
+            );
+
+        } catch (error) {
+            mainLogger.debug(`Произошла ошибка изменения последнего сообщения из амо `);
+            errorHandlingByType(error);
+        }
     }
 }
 

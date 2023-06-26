@@ -21,7 +21,7 @@ const User = new Schema<UserInterface>({
                 type: Object({
                     id: { type: Number, require: true },
                     name: { type: String, require: true },
-                    external_id: { type: String, require: true }
+                    external_id: { type: String, require: true },
                 }), require: true
             },
             pipeline: {

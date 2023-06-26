@@ -80,7 +80,7 @@ class AmoChatAPI {
         this.CHAT_CHANNEL_NAME = process.env.CHAT_CHANNEL_NAME || '';
     }
 
-    getHeaders(method: string, path: string, requestBody: object): ChatApiHeaders {
+    getHeaders(method: string, path: string, requestBody: object | ''): ChatApiHeaders {
 
         const checkSum = String(MD5(JSON.stringify(requestBody)));
 
@@ -166,6 +166,24 @@ class AmoChatAPI {
             errorHandlingByType(error);
         }
         return null;
+    }
+
+    async getChatHistory(scopeId: string, conversationId: string): Promise<boolean> {
+        try {
+
+            const res = await axios.get(
+                `${this.REQ_URL}/v2/origin/custom/${scopeId}/chats/${encodeURIComponent(conversationId)}/history`,
+                { headers: this.getHeaders('get', `/v2/origin/custom/${scopeId}/chats`, '') }
+            );
+            console.log(res.data?.messages);
+            
+            return true;
+        } catch (error: unknown) {
+            errorHandlingByType(error);
+            console.log('Error getting chat history');
+            
+            return false
+        }
     }
 }
 

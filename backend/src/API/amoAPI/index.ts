@@ -111,6 +111,7 @@ class ClientApi extends Api {
             }
             if (!account) {
                 errorHandlingByType(new Error('Account not found'));
+                throw new Error('Account not found');
             }
             if (account.access_token && account.refresh_token) {
                 this.logger.debug(`Received tokens`);
@@ -119,6 +120,7 @@ class ClientApi extends Api {
                 return Promise.resolve(this.ACCESS_TOKEN);
             } else {
                 errorHandlingByType(new Error('no tokens'));
+                throw new Error('no tokens');
             }
         } catch (error) {
             this.logger.error(error);
@@ -337,12 +339,15 @@ class ClientApi extends Api {
         return null;
     });
 
-    editSource: (newSource: { id: number, pipelineId: number }) => Promise<AmoChatSourceInterface | null> = this.authChecker(async (newSource: { id: number, pipelineId: number }) => {
+    editSource: (newSource: { id: number, pipelineId: number }) => Promise<AmoChatSourceInterface & {pipeline_id: number} | null> = this.authChecker(async (newSource: { id: number, pipelineId: number }) => {
         try {
             const res = await axios.patch(
                 `${this.ROOT_URL}/api/v4/sources`,
                 [
-                    newSource
+                    {
+                        id: newSource.id,
+                        pipeline_id: newSource.pipelineId,
+                    }
                 ],
                 {
                     headers: {
@@ -351,7 +356,7 @@ class ClientApi extends Api {
                 }
             );
 
-            return res.data._embedded.sources[0];
+            return res.data?._embedded?.sources[0] || null;
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
                 this.logger.debug('Error editing source');
@@ -438,8 +443,8 @@ class ClientApi extends Api {
             await axios.post(
                 `${this.ROOT_URL}/api/v4/contacts/chats`,
                 [{
-                    contact_id: chatId,
-                    chat_id: contactId
+                    contact_id: contactId,
+                    chat_id: chatId
                 }],
                 {
                     headers: {
@@ -455,6 +460,27 @@ class ClientApi extends Api {
             }
         }
     });
+
+    isAmoContactIdValid: (contactId: number) => Promise<boolean> = this.authChecker(async (contactId: number) => {
+        try {
+            const res = await axios.get(
+                `${this.ROOT_URL}api/v4/contacts/${contactId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${this.ACCESS_TOKEN}`
+                    }
+                }
+            );
+
+            return res.status === 200;
+        } catch (error: unknown) {
+            if (error instanceof AxiosError) {
+                this.logger.debug('Error checking contact id OR contact doesn\'t exist in AMO');
+                this.logger.debug(error?.response?.data?.['validation-errors']?.[0]?.errors || error?.response?.data);
+            }
+        }
+        return false;
+    })
 }
 
 export default ClientApi;
