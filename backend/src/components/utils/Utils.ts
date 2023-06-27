@@ -1,7 +1,6 @@
 import { v5 as uuidv5 } from 'uuid';
 import dotenv from 'dotenv';
 import path from 'node:path';
-import { TypedRequestChatNewMessageBody } from '../../@types/express-custom/RequestChat';
 
 dotenv.config({
     path: path.resolve(__dirname, '..', '..', '..', `${process.env.NODE_ENV}.env`)

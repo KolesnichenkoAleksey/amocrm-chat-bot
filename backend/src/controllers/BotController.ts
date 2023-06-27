@@ -331,9 +331,8 @@ class BotController {
             const api = new ClientApi({ subDomain: appUser.widgetUserSubdomain, accountId });
             
             const editedSource = await api.editSource({ id: bot.amoChatsSource.id, pipelineId: pipeline.id });
-            console.log(editedSource);
             if (!editedSource || editedSource.pipeline_id !== pipeline.id) {
-                return next(ApiError.internal('Не удалось изменить воронку для источника!'))
+                return next(ApiError.internal('РћС€РёР±РєР° РёР·РјРµРЅРµРЅРёСЏ РІРѕСЂРѕРЅРєРё!'))
             }
 
             await mongoManager.changePipeline(accountId, botToken, pipeline);

@@ -1,9 +1,16 @@
 import mongoose from 'mongoose';
 import { DataBaseConnectionOptions } from '../../@types/mongo/MongoConfig';
 import User from '../../models/userModel';
-import { getUserLogger, mainLogger } from '../logger/logger';
+import { 
+    getUserLogger,
+    mainLogger 
+} from '../logger/logger';
 import { errorHandlingByType } from '../../error/errorHandlingByType';
-import { InitializingBot, PipelineInterface, UserInterface } from '../../@types/models/UserInterface';
+import { 
+    InitializingBot, 
+    PipelineInterface, 
+    UserInterface 
+} from '../../@types/models/UserInterface';
 import LinkedDealsModel from '../../models/linkedDealsModel';
 import LinkedContactsModel from '../../models/linkedContactsModel';
 import {
@@ -11,7 +18,10 @@ import {
     LinkedDealsInterface,
     LinkedGroup,
 } from '../../@types/models/LinkedDealsInterface';
-import { LinkedContact, LinkedContactsInterface } from '../../@types/models/LinkedContactsInterface';
+import { 
+    LinkedContact, 
+    LinkedContactsInterface 
+} from '../../@types/models/LinkedContactsInterface';
 import linkedDealsModel from '../../models/linkedDealsModel';
 
 class ManagerMongoDB {

@@ -82,7 +82,7 @@ export class BotListeners {
                             telegramUserId: userTelegramId
                         }
                     )
-                    amoContactId = newContactId
+                    amoContactId = newContactId;
                 }
                 await new Promise(res => setTimeout(res, 1000));
             } else {

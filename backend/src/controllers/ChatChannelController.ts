@@ -11,7 +11,7 @@ let chatMsgRequestQueue: QueueItem[] = [];
 interface QueueItem {
     req: TypedRequestChatNewMessage,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
 }
 
 const QueueProcessing = async ({req, res, next}: QueueItem, isSendPersonal: boolean): Promise<void> => {
@@ -75,23 +75,23 @@ const QueueProcessing = async ({req, res, next}: QueueItem, isSendPersonal: bool
 class ChatChannelController {
     async sendMessage(req: TypedRequestChatNewMessage, res: Response, next: NextFunction) {
 
-        if (chatMsgRequestQueue.length === 0) {
+        if (!chatMsgRequestQueue.length) {
             chatMsgRequestQueue.push({req, res, next});
             setTimeout(async () => {
 
                 if (chatMsgRequestQueue.length === 1) {
                     const item = chatMsgRequestQueue.shift();
-                    await QueueProcessing(item, false)
+                    await QueueProcessing(item, false);
                 }
 
-                while (chatMsgRequestQueue.length !== 0) {
+                while (chatMsgRequestQueue.length) {
                     const item = chatMsgRequestQueue.shift();
-                    await QueueProcessing(item, true)
+                    await QueueProcessing(item, true);
                 }
                 return;
-            }, 2000)
+            }, 2000);
         } else {
-            chatMsgRequestQueue.push({req, res, next})
+            chatMsgRequestQueue.push({req, res, next});
         }
     }
 
