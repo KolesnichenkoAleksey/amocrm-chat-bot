@@ -308,7 +308,7 @@ class ClientApi extends Api {
             });
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
-                this.logger.debug(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
+                this.logger.debug(error?.response?.data);
             }
         }
     });
@@ -333,7 +333,7 @@ class ClientApi extends Api {
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
                 this.logger.debug('Error adding source');
-                this.logger.debug(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
+                this.logger.debug(error?.response?.data);
             }
         }
         return null;
@@ -360,7 +360,7 @@ class ClientApi extends Api {
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
                 this.logger.debug('Error editing source');
-                this.logger.debug(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
+                this.logger.debug(error?.response?.data);
             }
         }
         return null;
@@ -381,7 +381,7 @@ class ClientApi extends Api {
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
                 this.logger.debug('Error deleting source');
-                this.logger.debug(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
+                this.logger.debug(error?.response?.data);
             }
         }
     });
@@ -407,7 +407,7 @@ class ClientApi extends Api {
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
                 this.logger.debug('Error creating contact');
-                this.logger.debug(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
+                this.logger.debug(error?.response?.data);
             }
             return null;
         }
@@ -433,7 +433,7 @@ class ClientApi extends Api {
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
                 this.logger.debug('Error linking contact to lead');
-                this.logger.debug(error?.response?.data['validation-errors'][0].errors || error?.response?.data);
+                this.logger.debug(error?.response?.data);
             }
         }
     });
@@ -456,27 +456,27 @@ class ClientApi extends Api {
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
                 this.logger.debug('Error linking chat to contact');
-                this.logger.debug(error?.response?.data?.['validation-errors']?.[0]?.errors || error?.response?.data);
+                this.logger.debug(error?.response?.data);
             }
         }
     });
 
     isAmoContactIdValid: (contactId: number) => Promise<boolean> = this.authChecker(async (contactId: number) => {
-        try {
+        try {            
             const res = await axios.get(
-                `${this.ROOT_URL}api/v4/contacts/${contactId}`,
+                `${this.ROOT_URL}/api/v4/contacts/${contactId}`,
                 {
                     headers: {
                         Authorization: `Bearer ${this.ACCESS_TOKEN}`
                     }
                 }
-            );
+            );            
 
             return res.status === 200;
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
                 this.logger.debug('Error checking contact id OR contact doesn\'t exist in AMO');
-                this.logger.debug(error?.response?.data?.['validation-errors']?.[0]?.errors || error?.response?.data);
+                this.logger.debug(error?.response?.data);
             }
         }
         return false;

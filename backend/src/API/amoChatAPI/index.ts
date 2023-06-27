@@ -163,28 +163,12 @@ class AmoChatAPI {
             );
             return res.data;
         } catch (error: unknown) {
+            errorHandlingByType('Error creating chat');
             errorHandlingByType(error);
         }
         return null;
     }
 
-    async getChatHistory(scopeId: string, conversationId: string): Promise<boolean> {
-        try {
-
-            const res = await axios.get(
-                `${this.REQ_URL}/v2/origin/custom/${scopeId}/chats/${encodeURIComponent(conversationId)}/history`,
-                { headers: this.getHeaders('get', `/v2/origin/custom/${scopeId}/chats`, '') }
-            );
-            console.log(res.data?.messages);
-            
-            return true;
-        } catch (error: unknown) {
-            errorHandlingByType(error);
-            console.log('Error getting chat history');
-            
-            return false
-        }
-    }
 }
 
 export default new AmoChatAPI();

@@ -1,7 +1,7 @@
 import { v5 as uuidv5 } from 'uuid';
 import dotenv from 'dotenv';
 import path from 'node:path';
-import { LastMessageFromAMOInterface } from '../../@types/models/LinkedDealsInterface';
+import { TypedRequestChatNewMessageBody } from '../../@types/express-custom/RequestChat';
 
 dotenv.config({
     path: path.resolve(__dirname, '..', '..', '..', `${process.env.NODE_ENV}.env`)
@@ -19,12 +19,6 @@ class Utils {
         return uuidv5(input, this.TELEGRAM_USER_SECRET_KEY);
     }
 
-    isNOTAmoMessagesEquals(msg1: LastMessageFromAMOInterface, msg2: LastMessageFromAMOInterface) {
-        if (!msg1 || !msg2) {
-            return false;
-        }
-        return msg1.time !== msg2.time || msg1.text !== msg2.text || msg1.senderId !== msg2.senderId;
-    }
 }
 
 export default new Utils();

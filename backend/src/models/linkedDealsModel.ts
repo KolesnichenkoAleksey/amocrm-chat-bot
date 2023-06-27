@@ -16,14 +16,6 @@ const LinkedDealsModel = new Schema<LinkedDealsInterface>({
                 }),
                 require: true
             }],
-            lastMessageFromAMO: {
-                type: Object({
-                    time: {type: Number, require: true},
-                    senderId: {type: String, require: true},
-                    text: {type: String, require: true}
-                }),
-                require: false
-            }
         }),
         require: true
     },

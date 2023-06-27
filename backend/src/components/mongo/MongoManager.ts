@@ -8,7 +8,6 @@ import LinkedDealsModel from '../../models/linkedDealsModel';
 import LinkedContactsModel from '../../models/linkedContactsModel';
 import {
     DealInterface,
-    LastMessageFromAMOInterface,
     LinkedDealsInterface,
     LinkedGroup,
 } from '../../@types/models/LinkedDealsInterface';
@@ -685,20 +684,6 @@ class ManagerMongoDB {
         }
     }
 
-    async editLastMessageFromAMO(accountId: number, tgGroupId: number, lastMessage: LastMessageFromAMOInterface): Promise<void> {
-        try {
-            await LinkedDealsModel.updateOne({ widgetUserId: accountId, },
-                {'linkedGroups.$[group].lastMessageFromAMO': lastMessage},
-                {
-                    arrayFilters: [{ 'group.telegramGroupId': tgGroupId }],
-                },
-            );
-
-        } catch (error) {
-            mainLogger.debug(`Произошла ошибка изменения последнего сообщения из амо `);
-            errorHandlingByType(error);
-        }
-    }
 }
 
 export default new ManagerMongoDB();

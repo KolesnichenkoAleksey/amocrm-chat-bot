@@ -69,6 +69,9 @@ export class BotListeners {
             const api = new ClientApi({subDomain: appUser.widgetUserSubdomain, accountId: appUser.accountId});
             let amoContactId = contactId;
 
+            const [bot] = appUser.initializingBots.filter(bot => bot.botToken === telegramToken);
+            const newChat = await amoChatAPI.createChat(appUser.amojoScopeId, userTelegramId, groupId, bot.amoChatsSource.external_id, userName);
+
             if (!contactId) {
                 const newContactId = await api.createContact(userName)
                 if (newContactId) {
@@ -82,17 +85,10 @@ export class BotListeners {
                     amoContactId = newContactId
                 }
                 await new Promise(res => setTimeout(res, 1000));
-            } 
-            
-            if (contactId) {
+            } else {
                 const isContactInAmo = await api.isAmoContactIdValid(contactId);
 
-                // не получается привязать существующий чат к контакту удаленному из амо потому что чат уже привязан
-                // можно пытаться получить историю чата и если она есть то не создавать контакт если вернут ошибку то создавать
-                const isChatHistoryExist = await amoChatAPI.getChatHistory(appUser.amojoScopeId, `reon-${Utils.hashFunction(String(groupId) + String(userTelegramId))}`);
-                console.log(isChatHistoryExist);
-                
-                if (!isContactInAmo && !isChatHistoryExist) {
+                if (!isContactInAmo) {
                     const newContactId = await api.createContact(userName)
                     if (newContactId) {
                         await mongoManager.editContactAmoId(appUser.accountId, contactId, newContactId);
@@ -101,10 +97,6 @@ export class BotListeners {
                     await new Promise(res => setTimeout(res, 1000));
                 }
             }
-            
-            const [bot] = appUser.initializingBots.filter(bot => bot.botToken === telegramToken);
-
-            const newChat = await amoChatAPI.createChat(appUser.amojoScopeId, userTelegramId, groupId, bot.amoChatsSource.external_id, userName);
 
             if (newChat && amoContactId) {
                 await mongoManager.addAmoChatByTgGroupId(appUser.accountId, groupId, newChat.id);
